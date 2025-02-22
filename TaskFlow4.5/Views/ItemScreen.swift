@@ -48,8 +48,8 @@ struct ItemScreen: View {
                     .frame(width: 45, height: 45)
             }.background(.blue.shadow(.drop(color: .black.opacity(0.25), radius: 5, x: 10, y: 10)), in: .circle)
             .sheet(isPresented: $showAddItemSheet) {
-                AddItemView()
-                    .presentationDetents([.large])
+                AddItem( )
+                   .presentationDetents([.large])
             }
         }
         .blur(radius: showAddItemSheet ? 8 : 0) // Applies blur effect when sheet is presented
