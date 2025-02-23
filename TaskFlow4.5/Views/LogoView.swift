@@ -10,22 +10,22 @@ import SwiftUI
 struct LogoView: View {
     var body: some View {
         ZStack{
-            Image(systemName: "memorychip")
+            Image(systemName: "sun.max.fill")
                 .resizable()
-                .frame(width: 35, height: 35)
-                .foregroundColor(.blue).opacity(0.3)
+                .frame(width: 55, height: 55)
+                .foregroundColor(.orange).opacity(0.3)
             HStack {
-                Text("Mind")
-                    .font(.callout)
-                    .fontDesign(.serif)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-                    .offset(x: 13, y: 1)
-                Text("Flow")
+                Text("Orbit")
                     .font(.callout)
                     .fontDesign(.serif)
                     .fontWeight(.bold)
                     .foregroundColor(.blue)
+                    .offset(x: 13, y: 1)
+                Text("Plan")
+                    .font(.callout)
+                    .fontDesign(.serif)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
                     .offset(x: 5, y: 1)
               
                 Text("1.0")

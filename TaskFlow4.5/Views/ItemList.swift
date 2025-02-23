@@ -12,26 +12,41 @@ import SwiftData
 struct ItemList: View {
     @Environment(\.modelContext) private var context
     @Query private var items: [Item]
+    @State private var activeTab: Category = .today
     // Computed property to filter and sort items based on the active tab
     private var filteredItems: [Item] {
         switch activeTab {
         case .scheduled:
             return items.filter { $0.category == "Scheduled" }.sorted { $0.dateDue < $1.dateDue }
-        case .upcoming:
-            return items.filter { $0.category == "Upcoming" }.sorted { $0.dateAdded < $1.dateAdded }
-        case .ideas:
-            return items.filter { $0.category == "Ideas" }.sorted { $0.title < $1.title }
-        case .scheduled:
-            return items.filter { $0.category == "Scheduled" }.sorted { $0.dateAdded < $1.dateAdded }
-        case .completed:
-            return items.filter { $0.category == "Completed"  }.sorted { $0.dateCompleted < $1.dateCompleted }
+        case .work:
+            return items.filter { $0.category == "Work" }.sorted { $0.title < $1.title }
+        case .today:
+            return items.filter { $0.category == "Today" }.sorted { $0.dateAdded < $1.dateAdded }
+        case .family:
+            return items.filter { $0.category == "Family"  }.sorted { $0.dateAdded < $1.dateDue }
+        case .health:
+            return items.filter { $0.category == "Health" }.sorted { $0.dateAdded < $1.dateDue }
         }
     }
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationStack{
+            ScrollView{
+                CustomTabBar(activeTab: $activeTab)
+                    LazyVStack {
+                        Text(activeTab.rawValue + (activeTab == .scheduled ? " Thou Shalt Not Forget! " : " Shit"))
+                            .font(.title3)
+                            .fontDesign(.serif)
+                            .foregroundColor(.gray)
+                            .padding(.leading, 20)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            }
+        }
     }
-}
 
 #Preview {
     ItemList()
 }
+
+

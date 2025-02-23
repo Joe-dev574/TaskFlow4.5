@@ -19,7 +19,7 @@ struct AddItem: View {
     @State private var dateDue: Date = .now
     @State private var dateStarted: Date = .now
     @State private var dateCompleted: Date = .now
-    @State private var itemCategory: Category = .work
+    @State private var itemCategory: Category = .today
   
     // MARK: - Animation Properties
     @State private var animateColor: Color = Category.work.color
@@ -93,20 +93,16 @@ struct AddItem: View {
                             if itemCategory == .scheduled {
                                 DatePicker("Date Due", selection: $dateDue)
                             }
-                            if itemCategory == .urgent {
+                            if itemCategory == .today {
                                 DatePicker("Date Due", selection: $dateDue)
+                                DatePicker("Date Started", selection: $dateStarted)
+                                DatePicker("Date Completed", selection: $dateCompleted)
                             }
                             if itemCategory == .work {
                                 DatePicker("Date Due", selection: $dateDue)
                                 DatePicker("Started", selection: $dateStarted)
                             }
-                            if itemCategory == .spirit{
-                                DatePicker("Date Due", selection: $dateDue)
-                            }
-                            if itemCategory == .body{
-                                DatePicker("Date Due", selection: $dateDue)
-                            }
-                            if itemCategory == .mind{
+                            if itemCategory == .health{
                                 DatePicker("Date Due", selection: $dateDue)
                             }
                         }

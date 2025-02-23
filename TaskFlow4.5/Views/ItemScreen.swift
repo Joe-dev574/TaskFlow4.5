@@ -26,16 +26,11 @@ struct ItemScreen: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HeaderView()
-            
-            GeometryReader { geometry in
-                let size = geometry.size
-                ScrollView(.vertical, showsIndicators: false) {
                     VStack {
                         ItemList()
                     }
                 }
-            }
-        }
+            
         .overlay(alignment: .bottom) {
             // Floating action button to add new items
             Button(action: {

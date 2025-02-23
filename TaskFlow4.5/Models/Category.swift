@@ -9,52 +9,48 @@ import SwiftUI
 
 
 enum Category: String, CaseIterable {
-    // Personal Well-being Categories
-    case spirit = "Spirit"
-    case mind = "Mind"
-    case body = "Body"
     
     // Life Domains
-    case work = "Work"
+    case today = "Today"
     case family = "Family"
+    case health = "Health"
+    case work = "Work"
+  
     
+   
+  
     // Priority/Time-based Categories
-    case urgent = "Urgent"
     case scheduled = "Scheduled"
+  
     
-    /// Groups categories by their logical sections
-    static func groupedCategories() -> [String: [Category]] {
-        [
-            "Personal Well-being": [.spirit, .mind, .body],
-            "Life Domains": [.work, .family],
-            "Priority/Time-based": [.urgent, .scheduled]
-        ]
-    }
-    
-    /// Returns the display group name for the category
-    var groupName: String {
-        switch self {
-        case .spirit, .mind, .body: return "Personal Well-being"
-        case .work, .family: return "Life Domains"
-        case .urgent, .scheduled: return "Priority/Time-based"
-        }
-    }
     var color: Color{
         switch self {
-        case .body:
-            return Color.blue
-        case .mind:
-            return Color.pink
-        case .spirit:
-            return Color.brown
         case .family:
-            return Color.orange
-        case .scheduled:
-            return Color.purple
-        case .urgent:
-            return Color.red
-        case .work:
             return Color.green
+        case .scheduled:
+            return Color.orange
+        case .work:
+            return Color.blue
+        case .today:
+            return Color.primary
+        case .health:
+            return Color.red
+        }
+    }
+    var symbolImage: String {
+        switch self {
+        // Time-Based Symbols
+        case .today: "alarm"
+        case .work: "calendar.and.person"
+       
+        
+        // Status-Based Symbols
+        case .scheduled: "repeat"
+
+        case .family:
+            "figure.2.and.child.holdinghands"
+        case .health:
+            "heart.rectangle"
         }
     }
 }
