@@ -43,10 +43,21 @@ final class Item {
     @Relationship(deleteRule: .cascade)
     var itemTasks: [ItemTask]?
     
-  
-    // MARK: - Initialization
     
-    /// Initializes a new Item with default values
+    // MARK: - Initialization
+       
+       /// Initializes a new Item with default values
+       /// - Parameters:
+       ///   - title: The item's title (default: empty string)
+       ///   - remarks: Additional notes (default: empty string)
+       ///   - dateAdded: Creation date (default: now)
+       ///   - dateDue: Due date (default: now)
+       ///   - dateStarted: Start date (default: now)
+       ///   - dateCompleted: Completion date (default: now)
+       ///   - category: Associated category (default: .scheduled)
+       ///   - tint: Color identifier (default: "TaskColor 1")
+    ///
+    ///   
     init(
         title: String = "",
         remarks: String = "",

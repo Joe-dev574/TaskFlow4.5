@@ -32,19 +32,26 @@ struct ItemList: View {
         NavigationStack{
             ScrollView{
                 CustomTabBar(activeTab: $activeTab)
-                    LazyVStack {
-                        Text(activeTab.rawValue + (activeTab == .scheduled ? " Thou Shalt Not Forget! " : " Shit"))
-                            .font(.title3)
-                            .fontDesign(.serif)
-                            .foregroundColor(.gray)
-                            .padding(.leading, 20)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                LazyVStack {
+                    Text(activeTab.rawValue + (activeTab == .scheduled ? " Thou Shalt Not Forget! " : " Shit"))
+                        .font(.title3)
+                        .fontDesign(.serif)
+                        .foregroundColor(.gray)
+                        .padding(.leading, 20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    ForEach(filteredItems) { item in
+                        NavigationLink{
+                            ItemEditView()
+                        } label: {
+                            ItemCardView(item: item)
+                                .padding(.horizontal, 12)
+                        }
                     }
                 }
             }
         }
     }
-
+}
 #Preview {
     ItemList()
 }

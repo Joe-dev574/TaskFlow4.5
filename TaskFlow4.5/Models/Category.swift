@@ -7,50 +7,64 @@
 import SwiftData
 import SwiftUI
 
-
+/// Represents different life domains and priority categories with associated styling
 enum Category: String, CaseIterable {
+    // MARK: - Life Domain Cases
     
-    // Life Domains
+    /// Represents tasks or focus for the current day
     case today = "Today"
+    
+    /// Represents family-related tasks and priorities
     case family = "Family"
+    
+    /// Represents health, both mental and physical, as well as wellness activities
     case health = "Health"
+    
+    /// Represents work-related tasks and obligations
     case work = "Work"
-  
     
-   
-  
-    // Priority/Time-based Categories
+    // MARK: - Priority/Time-based Cases
+    
+    /// Represents scheduled or recurring tasks
     case scheduled = "Scheduled"
-  
     
-    var color: Color{
+    // MARK: - Computed Properties
+    
+    /// Returns a color associated with each category for visual distinction
+    var color: Color {
         switch self {
         case .family:
-            return Color.green
+            return .green // Green for family-related items
         case .scheduled:
-            return Color.orange
+            return .orange // Orange for scheduled tasks
         case .work:
-            return Color.blue
+            return .blue // Blue for work items
         case .today:
-            return Color.primary
+            return .gray // System gray color for current day
         case .health:
-            return Color.red
+            return .red // Red for health-related items
         }
     }
+    
+    /// Returns a system symbol image for each category
     var symbolImage: String {
         switch self {
         // Time-Based Symbols
-        case .today: "alarm"
-        case .work: "calendar.and.person"
-       
-        
+        case .today:
+            return "alarm" // Clock symbol for daily tasks
+                    
+        case .work:
+            return "calendar.and.person" // Calendar with person for work
+            
         // Status-Based Symbols
-        case .scheduled: "repeat"
-
+        case .scheduled:
+            return "repeat" // Repeat symbol for scheduled tasks
+            
         case .family:
-            "figure.2.and.child.holdinghands"
+            return "figure.2.and.child.holdinghands" // Family symbol
+            
         case .health:
-            "heart.rectangle"
+            return "heart.rectangle" // Heart in rectangle for health
         }
     }
 }
