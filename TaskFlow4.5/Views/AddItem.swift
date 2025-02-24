@@ -36,6 +36,17 @@ struct AddItem: View {
     // MARK: - Initialization
     init(editItem: Item? = nil) {
         self.editItem = editItem
+        // Pre-populate fields if editing an existing item
+        if let item = editItem {
+            _title = State(initialValue: item.title)
+            _remarks = State(initialValue: item.remarks)
+            _dateAdded = State(initialValue: item.dateAdded)
+            _dateDue = State(initialValue: item.dateDue)
+            _dateStarted = State(initialValue: item.dateStarted)
+            _dateCompleted = State(initialValue: item.dateCompleted)
+            _itemCategory = State(initialValue: Category(rawValue: item.category) ?? .today)
+            _animateColor = State(initialValue: Category(rawValue: item.category)?.color ?? itemCategory.color)
+        }
     }
     
     // MARK: - Body
@@ -45,7 +56,7 @@ struct AddItem: View {
             itemCategory.color
                 .ignoresSafeArea()
             
-            // Animated circle effect for category changes
+            // Animated circle transition effect for category changes
             GeometryReader { geometry in
                 let size = geometry.size
                 Rectangle()
@@ -64,19 +75,11 @@ struct AddItem: View {
             NavigationStack {
                 Form {
                     Section("Title") {
-                        CustomTextEditor(
-                            remarks: $title,
-                            placeholder: "Enter title here...",
-                            minHeight: 50
-                        )
+                        CustomTextEditor(remarks: $remarks, placeholder: "Enter title of item...", minHeight: 35)
                     }
                     
                     Section("Brief Description") {
-                        CustomTextEditor(
-                            remarks: $remarks,
-                            placeholder: "Brief description here...",
-                            minHeight: 100
-                        )
+                        CustomTextEditor(remarks: $remarks, placeholder: "Enter brief description...", minHeight: 75)
                     }
                     
                     Section("Category") {
@@ -89,6 +92,7 @@ struct AddItem: View {
                     .foregroundStyle(itemCategory.color)
                     
                     Section("Dates") {
+                        // Display creation date
                         HStack {
                             Text("Date Created:")
                                 .font(.callout)
@@ -101,11 +105,11 @@ struct AddItem: View {
                                 .foregroundStyle(itemCategory.color)
                                 .padding(.trailing, 12)
                         }
-                        
                         datePickersForCategory()
                     }
                 }
                 .toolbar {
+                    // Cancel button
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Cancel") {
                             HapticsManager.notification(type: .success)
@@ -115,10 +119,12 @@ struct AddItem: View {
                         .foregroundStyle(itemCategory.color)
                     }
                     
+                    // Title logo
                     ToolbarItem(placement: .principal) {
                         LogoView()
                     }
                     
+                    // Save button
                     ToolbarItem(placement: .topBarTrailing) {
                         Button("Save") {
                             save()
@@ -133,9 +139,7 @@ struct AddItem: View {
                 }
                 // Error alert for save failures
                 .alert("Error", isPresented: $showErrorAlert) {
-                    Button("OK") {
-                        showErrorAlert = false
-                    }
+                    Button("OK") { showErrorAlert = false }
                 } message: {
                     Text(errorMessage)
                 }
@@ -150,6 +154,7 @@ struct AddItem: View {
     }
     
     // MARK: - Private Methods
+    /// Saves the item to the model context
     private func save() {
         let item = editItem ?? Item(
             title: title,
@@ -164,6 +169,7 @@ struct AddItem: View {
             context.insert(item)
         }
         
+        // Update item properties
         item.title = title
         item.remarks = remarks
         item.dateAdded = dateAdded
@@ -177,7 +183,6 @@ struct AddItem: View {
             HapticsManager.notification(type: .success)
             dismiss()
         } catch {
-            // Handle save failure with user-facing alert
             errorMessage = "Failed to save item: \(error.localizedDescription)"
             showErrorAlert = true
             print("Save error: \(error.localizedDescription)")
@@ -188,103 +193,17 @@ struct AddItem: View {
     @ViewBuilder
     private func datePickersForCategory() -> some View {
         DatePicker("Date Due", selection: $dateDue)
+            .foregroundStyle(itemCategory.color)
         
         if itemCategory == .today || itemCategory == .work {
             DatePicker("Date Started", selection: $dateStarted)
+                .foregroundStyle(itemCategory.color)
         }
         
         if itemCategory == .today {
             DatePicker("Completed", selection: $dateCompleted)
+                .foregroundStyle(itemCategory.color)
         }
-    }
-}
-
-// MARK: - Supporting Views
-
-/// Custom text editor with placeholder support
-struct CustomTextEditor: View {
-    @Binding var remarks: String
-    let placeholder: String
-    let minHeight: CGFloat
-    
-    var body: some View {
-        ZStack(alignment: .topLeading) {
-            if remarks.isEmpty {
-                Text(placeholder)
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 8)
-                    .padding(.leading, 4)
-            }
-            
-            TextEditor(text: $remarks)
-                .scrollContentBackground(.hidden)
-                .background(Color.gray.opacity(0.1))
-                .font(.system(size: 16))
-                .fontDesign(.serif)
-                .frame(minHeight: minHeight)
-                .foregroundStyle(.secondary)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 7)
-                        .stroke(Color.secondary, lineWidth: 2)
-                )
-        }
-    }
-}
-
-/// Grid-based category selector with animation support
-struct CategorySelector: View {
-    @Binding var selectedCategory: Category
-    @Binding var animateColor: Color
-    @Binding var animate: Bool
-    
-    var body: some View {
-        LazyVGrid(
-            columns: Array(repeating: GridItem(.flexible(), spacing: 20), count: 3),
-            spacing: 15
-        ) {
-            ForEach(Category.allCases, id: \.rawValue) { category in
-                CategoryButton(
-                    category: category,
-                    isSelected: selectedCategory == category,
-                    onTap: {
-                        guard !animate else { return }
-                        animateColor = category.color
-                        withAnimation(.interactiveSpring(response: 0.7, dampingFraction: 1)) {
-                            animate = true
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-                            animate = false
-                            selectedCategory = category
-                        }
-                    }
-                )
-            }
-        }
-    }
-}
-
-/// Individual category button with visual feedback
-struct CategoryButton: View {
-    let category: Category
-    let isSelected: Bool
-    let onTap: () -> Void
-    
-    var body: some View {
-        Text(category.rawValue.uppercased())
-            .font(.system(size: 12))
-            .fontDesign(.serif)
-            .padding(.vertical, 5)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 5)
-                    .fill(category.color.opacity(isSelected ? 0.5 : 0.10))
-            )
-            .foregroundStyle(.black)
-            .overlay(
-                RoundedRectangle(cornerRadius: 5)
-                    .stroke(.gray, lineWidth: isSelected ? 2 : 0)
-            )
-            .onTapGesture(perform: onTap)
     }
 }
 
@@ -293,3 +212,13 @@ struct CategoryButton: View {
     AddItem()
         .preferredColorScheme(.light)
 }
+
+//// MARK: - Placeholder Components (To be implemented)
+///// Placeholder for custom text editor component
+//struct CustomTextEditor: View {
+//    @Binding var text: String
+//    
+//    var body: some View {
+//        TextField("Enter text", text: $text)
+//    }
+//}

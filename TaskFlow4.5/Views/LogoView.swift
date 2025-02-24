@@ -19,10 +19,11 @@ struct LogoView: View {
     var body: some View {
         ZStack {
             // Animated background sun icon
-            Image(systemName: "sun.max.fill")
+            Image(systemName: "gear")
                 .resizable()
                 .frame(width: Constants.sunSize, height: Constants.sunSize)
-                .foregroundColor(.orange)
+                .foregroundColor(.secondary)
+                .offset(y: -7)
                 .opacity(Constants.sunOpacity)
                 .rotationEffect(.degrees(rotationAngle))
                 .scaleEffect(scale)
@@ -33,14 +34,14 @@ struct LogoView: View {
             // Main logo text container
             HStack(spacing: 0) {
                 // "Orbit" text component
-                Text("Orbit")
+                Text("Daily")
                     .font(.callout)
                     .fontDesign(.serif)
                     .fontWeight(.bold)
                     .foregroundColor(.blue)
                 
                 // "Plan" text component
-                Text("Plan")
+                Text("Grind")
                     .font(.callout)
                     .fontDesign(.serif)
                     .fontWeight(.bold)
@@ -53,7 +54,7 @@ struct LogoView: View {
                     .fontWeight(.regular)
                     .foregroundColor(.blue)
                     .offset(y: -5)
-                    .padding(.leading, 8)
+                    .padding(.leading, 1)
             }
             .offset(x: 5)
         }
@@ -64,7 +65,7 @@ struct LogoView: View {
         static let sunSize: CGFloat = 45
         static let sunOpacity: Double = 0.3
         static let maxAnimationCount: Int = 1
-        static let rotationDuration: Double = 2.0
+        static let rotationDuration: Double = 3
         static let pulseDuration: Double = 2.5
     }
     

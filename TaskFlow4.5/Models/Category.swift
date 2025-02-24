@@ -40,7 +40,7 @@ enum Category: String, CaseIterable {
         case .work:
             return .blue // Blue for work items
         case .today:
-            return .gray // System gray color for current day
+            return .brown // System gray color for current day
         case .health:
             return .red // Red for health-related items
         }

@@ -41,7 +41,7 @@ struct ItemList: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     ForEach(filteredItems) { item in
                         NavigationLink{
-                            ItemEditView()
+                            ItemEditView(editItem: item)
                         } label: {
                             ItemCardView(item: item)
                                 .padding(.horizontal, 12)

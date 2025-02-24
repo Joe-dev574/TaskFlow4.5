@@ -25,7 +25,7 @@ struct ItemScreen: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HeaderView()
+         //   HeaderView()
                     VStack {
                         ItemList()
                     }
@@ -84,6 +84,3 @@ struct ItemScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    ItemScreen()
-}
