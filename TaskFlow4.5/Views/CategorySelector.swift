@@ -46,7 +46,7 @@ struct CategorySelector: View {
                         }
                         
                         // Reset animation and update selection after delay
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             animate = false
                             selectedCategory = category
                         }

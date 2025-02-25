@@ -6,81 +6,112 @@
 //
 
 import SwiftUI
+import SwiftData
 
-/// A view that displays a list of items and provides functionality to add new items.
+/// A view displaying a list of items with a toolbar for navigation and actions
 struct ItemScreen: View {
-    // MARK: - Properties
+    // MARK: - State Properties
+    @Environment(\.modelContext) private var modelContext  // SwiftData context
+    @State private var showAddItemSheet: Bool = false      // Controls add item sheet visibility
+    @State private var showSidebar: Bool = false           // Controls sidebar visibility
+    @State private var currentDate: Date = Date()          // Current date for header
     
-    /// Environment object for managing Core Data context
-    @Environment(\.modelContext) private var modelContext
-    
-    /// Controls the visibility of the add item sheet
-    @State private var showAddItemSheet: Bool = false
-    
-    /// Tracks the current date for display purposes
-    @State private var currentDate: Date = .init()
-    
-   
     // MARK: - Body
-    
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-         //   HeaderView()
-                    VStack {
-                        ItemList()
-                    }
-                }
-            
-        .overlay(alignment: .bottom) {
-            // Floating action button to add new items
-            Button(action: {
-                showAddItemSheet = true
-                HapticsManager.notification(type: .success) // Provides haptic feedback
-            }) {
-                Image(systemName: "plus")
-                    .font(.callout)
-                    .foregroundStyle(.white)
-                    .frame(width: 45, height: 45)
-            }.background(.blue.shadow(.drop(color: .black.opacity(0.25), radius: 5, x: 10, y: 10)), in: .circle)
-            .sheet(isPresented: $showAddItemSheet) {
-                AddItem( )
-                   .presentationDetents([.large])
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 0) {
+                ItemList()  // List of items
             }
-        }
-        .blur(radius: showAddItemSheet ? 8 : 0) // Applies blur effect when sheet is presented
-    }
-    
-    // MARK: - Subviews
-    
-    /// Displays the header with date information
-    @ViewBuilder
-    private func HeaderView() -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 5) {
-                Text(currentDate.format("MMMM"))
-                    .foregroundStyle(.blue)
-                
-                Text(currentDate.format("YYYY"))
-                    .foregroundStyle(.gray)
-                
-                Spacer()
+            .frame(maxWidth: .infinity) // Ensures full width usage
+            .overlay(alignment: .bottomTrailing) {
+                // Floating action button for adding items
                 Button(action: {
+                    showAddItemSheet = true
                     HapticsManager.notification(type: .success)
-                }, label: {
-                LogoView( )
-            })
-                       }
-            .font(.title.bold())
-            
-            Text(currentDate.formatted(date: .complete, time: .omitted))
-                .font(.callout)
-                .fontWeight(.semibold)
-                .textScale(.secondary)
-                .foregroundStyle(.gray)
+                }) {
+                    Image(systemName: "plus")
+                        .font(.callout)
+                        .foregroundStyle(.white)
+                        .frame(width: 45, height: 45)
+                        .background(.blue)
+                        .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.25), radius: 5, x: 10, y: 10)
+                }
+                .padding()
+                .accessibilityLabel("Add New Item")
+            }
+            .blur(radius: showAddItemSheet ? 8 : 0) // Blurs content when sheet is shown
+            .sheet(isPresented: $showAddItemSheet) {
+                AddItem()
+                    .presentationDetents([.large])
+            }
+            .toolbar {
+                // Leading toolbar item: Sidebar menu toggle
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        withAnimation {
+                  //          showSidebar.toggle()
+                        }
+                    }) {
+                        Image(systemName: "line.3.horizontal")
+                            .foregroundStyle(.blue)
+                    }
+                    .accessibilityLabel("Toggle Sidebar")
+                }
+                
+                // Principal toolbar item: Custom header
+                ToolbarItem(placement: .principal) {
+                    HeaderView()
+                }
+                
+                // Trailing toolbar item: Profile button
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: ProfileView()) {
+                        Image(systemName: "person.circle")
+                            .font(.title3)
+                            .foregroundStyle(.blue)
+                    }
+                    .accessibilityLabel("Profile")
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline) // Keeps toolbar compact
         }
-        .padding(.horizontal, 10)
+        .overlay(
+            // Sidebar overlay
+            Group {
+                if showSidebar {
+                    SidebarView(isPresented: $showSidebar)
+                        .transition(.move(edge: .leading))
+                }
+            }
+        )
     }
-}
+    @ViewBuilder
+       private func HeaderView() -> some View {
+           HStack {
+               VStack(alignment: .leading, spacing: 6) {
+                   HStack(spacing: 5) {
+                       Text(currentDate.format("MMMM"))
+                           .foregroundStyle(.blue)
+                       Text(currentDate.format("YYYY"))
+                           .foregroundStyle(.gray)
+                   }
+                   .font(.title3.bold())
+                   
+                   Text(currentDate.formatted(date: .complete, time: .omitted))
+                       .font(.caption)
+                       .fontWeight(.semibold)
+                       .foregroundStyle(.gray)
+               }
+               Spacer()
+              
+                   LogoView()
+                       .frame(width: 50, height: 50)
+               }
+               .buttonStyle(PlainButtonStyle())
+               .padding(.horizontal, 5)
+           }
+       }
+   
 
-// MARK: - Preview
 

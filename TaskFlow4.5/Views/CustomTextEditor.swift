@@ -28,14 +28,17 @@ struct CustomTextEditor: View {
             // Main text editor component
             TextEditor(text: $remarks)
                 .scrollContentBackground(.hidden)    // Removes default background
-                .background(Color.gray.opacity(0.1)) // Custom subtle background
+                .background(.background.opacity(0.1)) // Custom subtle background
                 .font(.system(size: 16))             // Set font size
                 .fontDesign(.serif)                  // Use serif font style
                 .frame(minHeight: minHeight)         // Enforce minimum height
                 .foregroundStyle(.secondary)         // Text color
+                .padding(.horizontal, 4)
+                .padding(2)
                 .overlay(                            // Border overlay
-                    RoundedRectangle(cornerRadius: 7)
+                    RoundedRectangle(cornerRadius: 10)
                         .stroke(Color.secondary, lineWidth: 2)
+                       
                 )
         }
     }
