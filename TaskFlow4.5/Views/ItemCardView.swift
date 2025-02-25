@@ -4,7 +4,6 @@
 //
 //  Created by Joseph DeWeese on 1/31/25.
 //
-
 import SwiftUI
 import SwiftData
 
@@ -12,104 +11,122 @@ import SwiftData
 struct ItemCardView: View {
     // MARK: - Properties
     @Environment(\.modelContext) private var context // Access to SwiftData model context
-    let item: Item // The item to display
+    let item: Item                                   // The item to display
+    
+    // Computed property to map the item's category string to a Category enum
+    private var category: Category {
+        Category(rawValue: item.category) ?? .today
+    }
+    
+    // Computed properties for task progress
+    private var totalTasks: Int {
+        item.tasks.count
+    }
+    
+    private var completedTasks: Int {
+        item.tasks.filter { $0.isCompleted }.count
+    }
     
     // MARK: - Body
     var body: some View {
         NavigationStack {
-            SwipeAction(cornerRadius: 10, direction: .trailing) {
-                ZStack {
-                    // Background with material effect
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(.ultraThinMaterial.opacity(1.0)) // Simplified opacity value
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ZStack {
+                // Background with material effect
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(.ultraThinMaterial)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
+                
+                // Main content stack
+                VStack(alignment: .leading, spacing: 10) {
                     
-                    // Main content stack
-                    VStack(alignment: .leading, spacing: 8) { // Added spacing for consistency
-                        
-                        // Category header
-                        HStack(spacing: 12) {
-                            Spacer() // Pushes category tag to right
-                            Text(item.category)
-                                .padding(4)
-                                .foregroundStyle(.white)
-                                .font(.system(size: 14, weight: .semibold, design: .serif))
-                                .shadow(color: .black.opacity(0.5), radius: 2, x: 2, y: 2)
-                        }
-                        
-                        // Title section with icon
-                        HStack(spacing: 8) {
-                            // Icon based on first letter of title
-                            Text(String(item.title.prefix(1)))
-                                .font(.title)
-                                .fontWeight(.semibold)
-                                .fontDesign(.serif)
-                                .foregroundStyle(.white)
-                                .shadow(color: .black.opacity(0.5), radius: 2, x: 1, y: 1)
-                                .frame(width: 35, height: 35)
-                                .background(
-                                    Gradient(colors: [.blue, .purple]).opacity(0.8) // Replaced .inSelectedCategory with explicit gradient
-                                )
-                                .clipShape(Circle()) // Added for better visual appearance
-                                .padding(5)
-                            
-                            // Item title
-                            Text(item.title)
-                                .font(.system(size: 18, weight: .semibold, design: .serif))
-                                .foregroundStyle(.primary)
-                                .lineLimit(1) // Prevents title from wrapping
-                        }
-                        
-                        // Date section
-                        HStack(spacing: 4) {
-                            Spacer()
-                            Text("Date Created:")
-                                .foregroundStyle(.gray)
-                            Image(systemName: "calendar.badge.clock")
-                                .foregroundStyle(.gray)
-                            Text(item.dateAdded, format: .dateTime) // Simplified date formatting
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                        }
-                        .font(.system(size: 12, weight: .semibold, design: .serif))
-                        .padding(.horizontal, 4)
-                        .padding(.bottom, 4)
-                        
-                        // Remarks section (shown only if not empty)
-                        if !item.remarks.isEmpty {
-                            Text(item.remarks)
-                                .font(.system(size: 14, design: .serif))
-                                .foregroundStyle(.blue)
-                                .padding(.horizontal, 4)
-                                .lineLimit(3)
-                                .padding(.bottom, 4)
-                        }
-                        
-                        
+                    // Category header
+                    HStack(spacing: 12) {
+                        Spacer()
+                        Text(item.category)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .foregroundStyle(.white)
+                            .font(.system(size: 14, weight: .semibold, design: .serif))
+                            .background(category.color.opacity(0.8))
+                            .clipShape(Capsule())
+                            .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
                     }
-                    .padding(.horizontal, 7)
-                    .padding( 4)
+                    
+                    // Title section with category image and progress view
+                    HStack(spacing: 10) {
+                        Image(systemName: category.symbolImage)
+                            .font(.system(size: 24, weight: .medium))
+                            .foregroundStyle(.white)
+                            .frame(width: 36, height: 36)
+                            .background(category.color.opacity(0.8))
+                            .clipShape(Circle())
+                            .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
+                            .padding(.trailing, 2)
+                        
+                        Text(item.title)
+                            .font(.system(size: 18, weight: .semibold, design: .serif))
+                            .foregroundStyle(category.color)
+                            .lineLimit(1)
+                        
+                        if totalTasks > 0 {
+                            Spacer()
+                            ProgressView(value: Double(completedTasks) / Double(totalTasks))
+                                .progressViewStyle(CircularProgressViewStyle(tint: category.color))
+                                .frame(width: 30, height: 30)
+                        }
+                    }
+                    
+                    // Dates section (optional rendering)
+                    VStack(alignment: .leading, spacing: 4) {
+                        if item.dateAdded != .distantPast {
+                            HStack(spacing: 4) {
+                                Text("Added:")
+                                    .foregroundStyle(.gray)
+                                Image(systemName: "calendar")
+                                    .foregroundStyle(.gray)
+                                Text(item.dateAdded, format: .dateTime.day().month().year())
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        if item.dateDue != .distantPast {
+                            HStack(spacing: 4) {
+                                Text("Due:")
+                                    .foregroundStyle(.gray)
+                                Image(systemName: "clock")
+                                    .foregroundStyle(.gray)
+                                Text(item.dateDue, format: .dateTime.day().month().year())
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .font(.system(size: 12, weight: .medium, design: .serif))
+                    .padding(.horizontal, 4)
+                    
+                    // Remarks section (shown only if not empty)
+                    if !item.remarks.isEmpty {
+                        Text(item.remarks)
+                            .font(.system(size: 14, design: .default))
+                            .foregroundStyle(Color.gray)
+                            .padding(.horizontal, 4)
+                            .lineLimit(3)
+                            .padding(.bottom, 4)
+                    }
                 }
-            } actions: {
-                Action(tint: .red, icon: "trash", action: {
-                    context.delete(item)
-                    //WidgetCentrer.shared.reloadAllTimneLines
-                })
+                .padding(10)
             }
-        }
             // Card border overlay
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 12)
                     .stroke(
                         .linearGradient(
-                            colors: [.secondary],
-                            startPoint: .leading,
-                            endPoint: .trailing
+                            colors: [.gray.opacity(0.3)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         ),
-                        lineWidth: 2
+                        lineWidth: 1.5
                     )
             )
         }
     }
-
-
+}
