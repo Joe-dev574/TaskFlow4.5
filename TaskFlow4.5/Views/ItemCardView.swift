@@ -18,15 +18,6 @@ struct ItemCardView: View {
         Category(rawValue: item.category) ?? .today
     }
     
-    // Computed properties for task progress
-    private var totalTasks: Int {
-        item.tasks.count
-    }
-    
-    private var completedTasks: Int {
-        item.tasks.filter { $0.isCompleted }.count
-    }
-    
     // MARK: - Body
     var body: some View {
         NavigationStack {
@@ -53,7 +44,7 @@ struct ItemCardView: View {
                             .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
                     }
                     
-                    // Title section with category image and progress view
+                    // Title section with category image
                     HStack(spacing: 10) {
                         Image(systemName: category.symbolImage)
                             .font(.system(size: 24, weight: .medium))
@@ -65,16 +56,9 @@ struct ItemCardView: View {
                             .padding(.trailing, 2)
                         
                         Text(item.title)
-                            .font(.system(size: 18, weight: .semibold, design: .serif))
+                            .font(.system(size: 20, weight: .semibold))
                             .foregroundStyle(category.color)
                             .lineLimit(1)
-                        
-                        if totalTasks > 0 {
-                            Spacer()
-                            ProgressView(value: Double(completedTasks) / Double(totalTasks))
-                                .progressViewStyle(CircularProgressViewStyle(tint: category.color))
-                                .frame(width: 30, height: 30)
-                        }
                     }
                     
                     // Dates section (optional rendering)
@@ -86,7 +70,7 @@ struct ItemCardView: View {
                                 Image(systemName: "calendar")
                                     .foregroundStyle(.gray)
                                 Text(item.dateAdded, format: .dateTime.day().month().year())
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.gray)
                             }
                         }
                         if item.dateDue != .distantPast {
@@ -96,18 +80,18 @@ struct ItemCardView: View {
                                 Image(systemName: "clock")
                                     .foregroundStyle(.gray)
                                 Text(item.dateDue, format: .dateTime.day().month().year())
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.gray)
                             }
                         }
                     }
-                    .font(.system(size: 12, weight: .medium, design: .serif))
+                    .font(.system(size: 13, weight: .medium))
                     .padding(.horizontal, 4)
                     
                     // Remarks section (shown only if not empty)
                     if !item.remarks.isEmpty {
                         Text(item.remarks)
-                            .font(.system(size: 14, design: .default))
-                            .foregroundStyle(Color.gray)
+                            .font(.system(size: 14, weight: .regular, design: .serif)) // Standardized to serif
+                            .foregroundStyle(.primary) // Matches dates section
                             .padding(.horizontal, 4)
                             .lineLimit(3)
                             .padding(.bottom, 4)
@@ -120,7 +104,7 @@ struct ItemCardView: View {
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(
                         .linearGradient(
-                            colors: [.gray.opacity(0.3)],
+                            colors: [.gray.opacity(0.8), category.color.opacity(0.8)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),

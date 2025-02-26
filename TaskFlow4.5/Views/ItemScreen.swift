@@ -11,7 +11,8 @@ import SwiftData
 /// A view displaying a list of items with a fixed toolbar for navigation and actions
 struct ItemScreen: View {
     // MARK: - Environment and State Properties
-    @Environment(\.modelContext) private var modelContext  // Access to SwiftData context for data management
+    // Environment for managing object context in Core Data
+    @Environment(\.modelContext) private var modelContext
     @State private var showAddItemSheet: Bool = false      // Toggles the add item sheet visibility
     @State private var showSidebar: Bool = false           // Toggles the sidebar visibility
     @State private var currentDate: Date = Date()          // Tracks current date for header display
@@ -34,7 +35,7 @@ struct ItemScreen: View {
             }
             .blur(radius: showAddItemSheet ? 8 : 0)            // Blurs content when sheet is active
             .sheet(isPresented: $showAddItemSheet) {           // Presents sheet for adding new items
-                AddItem()
+                AddItem(item: Item())
                     .presentationDetents([.large])
             }
             .toolbar { toolbarItems }                          // Configures fixed toolbar

@@ -20,7 +20,7 @@ struct CustomTextEditor: View {
             // Placeholder text shown when remarks is empty
             if remarks.isEmpty {
                 Text(placeholder)
-                    .foregroundStyle(.secondary)    // Muted color for placeholder
+                    .foregroundStyle(.primary)    // Muted color for placeholder
                     .padding(.top, 8)              // Align with TextEditor padding
                     .padding(.leading, 4)          // Slight left padding
             }
@@ -32,7 +32,7 @@ struct CustomTextEditor: View {
                 .font(.system(size: 16))             // Set font size
                 .fontDesign(.serif)                  // Use serif font style
                 .frame(minHeight: minHeight)         // Enforce minimum height
-                .foregroundStyle(.secondary)         // Text color
+                .foregroundStyle(.primary)         // Text color
                 .padding(.horizontal, 4)
                 .padding(2)
                 .overlay(                            // Border overlay

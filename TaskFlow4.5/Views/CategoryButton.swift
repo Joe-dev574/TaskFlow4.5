@@ -26,7 +26,7 @@ struct CategoryButton: View {
                 .foregroundStyle(isSelected ? .white : .secondary)
                 .overlay(
                     RoundedRectangle(cornerRadius: 7)
-                        .stroke(.gearShape, lineWidth: isSelected ? 3 : 0)
+                        .stroke(.remark, lineWidth: isSelected ? 3 : 0)
                 )
                 .onTapGesture(perform: onTap)
         }
