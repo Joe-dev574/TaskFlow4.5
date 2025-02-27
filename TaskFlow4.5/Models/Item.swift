@@ -35,9 +35,13 @@ final class Item {
     /// Category classification stored as raw String value from Category enum
     var category: String
     
+    
+    var status: Status.RawValue
+    
     /// Tint color identifier for UI representation
     var tint: String
-    
+    @Relationship(inverse: \Tag.items)
+    var tags: [Tag]?
     /// Relationship to ItemTask objects with cascade delete rule
     /// When an Item is deleted, all associated ItemTasks will also be deleted
     @Relationship(deleteRule: .cascade)
@@ -45,19 +49,19 @@ final class Item {
     
     
     // MARK: - Initialization
-       
-       /// Initializes a new Item with default values
-       /// - Parameters:
-       ///   - title: The item's title (default: empty string)
-       ///   - remarks: Additional notes (default: empty string)
-       ///   - dateAdded: Creation date (default: now)
-       ///   - dateDue: Due date (default: now)
-       ///   - dateStarted: Start date (default: now)
-       ///   - dateCompleted: Completion date (default: now)
-       ///   - category: Associated category (default: .scheduled)
-       ///   - tint: Color identifier (default: "TaskColor 1")
+    
+    /// Initializes a new Item with default values
+    /// - Parameters:
+    ///   - title: The item's title (default: empty string)
+    ///   - remarks: Additional notes (default: empty string)
+    ///   - dateAdded: Creation date (default: now)
+    ///   - dateDue: Due date (default: now)
+    ///   - dateStarted: Start date (default: now)
+    ///   - dateCompleted: Completion date (default: now)
+    ///   - category: Associated category (default: .scheduled)
+    ///   - tint: Color identifier (default: "TaskColor 1")
     ///
-    ///   
+    ///
     init(
         title: String = "",
         remarks: String = "",
@@ -65,8 +69,10 @@ final class Item {
         dateDue: Date = .now,
         dateStarted: Date = .now,
         dateCompleted: Date = .now,
+        status: Status = .Active,
         category: Category = .scheduled,
-        tint: String = "TaskColor 1"  // Added default value
+        tint: String = "TaskColor 1",  // Added default value
+        tags: [Tag]? = nil
     ) {
         self.title = title
         self.remarks = remarks
@@ -75,9 +81,25 @@ final class Item {
         self.dateStarted = dateStarted
         self.dateCompleted = dateCompleted
         self.category = category.rawValue
+        self.status = status.rawValue
+        
         self.tint = tint
+        self.tags = tags
     }
-    
+    var icon: Image {
+        switch Status(rawValue: status)! {
+        case .Upcoming:
+            Image(systemName: "checkmark.diamond.fill")
+        case .Active:
+            Image(systemName: "item.fill")
+        case .Hold:
+            Image(systemName: "books.vertical.fill")
+        }
+    }
+    @Transient
+    var rawCategory: Category? {
+        return Category.allCases.first(where: { category == $0.rawValue })
+    }
     // MARK: - Helper Methods
     
     /// Determines if the item is completed based on completion date
@@ -109,14 +131,26 @@ final class Item {
         case "TaskColor 13": return .taskColor13
         case "TaskColor 14": return .taskColor14
         case "TaskColor 15": return .taskColor15
-    
+            
         default: return .black
         }
     }
+    
+    
+    enum Status: Int, Codable, Identifiable, CaseIterable {
+        case Upcoming, Active, Hold
+        var id: Self { self }
+        var descr: LocalizedStringResource {
+            switch self {
+            case .Upcoming: "Upcoming"
+            case .Active: "Active"
+            case .Hold: "Hold"
+            }
+        }
+    }
+    
+    // MARK: - Extensions
 }
-
-// MARK: - Extensions
-
 extension Item: Identifiable {
     // ID automatically provided by @Model
 }

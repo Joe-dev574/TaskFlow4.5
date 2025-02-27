@@ -7,25 +7,40 @@
 
 import SwiftUI
 
-/// Custom Swipe Action View
+/// A customizable swipe action view that reveals action buttons when swiped
+/// - Parameters:
+///   - cornerRadius: The corner radius of the swipe container (default: 0)
+///   - direction: The direction of the swipe (default: .trailing)
+///   - content: The main content view to be swiped
+///   - actions: Array of actions to display as buttons
 struct SwipeAction<Content: View>: View {
+    // MARK: - Properties
+    
     var cornerRadius: CGFloat = 0
     var direction: SwipeDirection = .trailing
     @ViewBuilder var content: Content
     @ActionBuilder var actions: [Action]
-    /// View Properties
+    
+    /// Environment property to adapt to light/dark mode
     @Environment(\.colorScheme) private var scheme
-    /// View Unique ID
-    let viewID = "CONTENTVIEW"
+    
+    /// Unique identifier for the content view
+    /// - Note: Consider making this a parameter if multiple instances are needed
+    private let viewID = "CONTENTVIEW"
+    
+    /// State to control interaction availability
     @State private var isEnabled: Bool = true
+    
+    /// State to track horizontal scroll position
     @State private var scrollOffset: CGFloat = .zero
+    
+    // MARK: - Body
     var body: some View {
         ScrollViewReader { scrollProxy in
             ScrollView(.horizontal) {
                 LazyHStack(spacing: 0) {
                     content
                         .rotationEffect(.init(degrees: direction == .leading ? -180 : 0))
-                        /// To Take Full Available Space
                         .containerRelativeFrame(.horizontal)
                         .background(scheme == .dark ? .black : .white)
                         .background {
@@ -38,14 +53,11 @@ struct SwipeAction<Content: View>: View {
                         .id(viewID)
                         .transition(.identity)
                         .overlay {
-                            GeometryReader {
-                                let minX = $0.frame(in: .scrollView(axis: .horizontal)).minX
-                                
+                            GeometryReader { proxy in
+                                let minX = proxy.frame(in: .scrollView(axis: .horizontal)).minX
                                 Color.clear
                                     .preference(key: OffsetKey.self, value: minX)
-                                    .onPreferenceChange(OffsetKey.self) {
-                                        scrollOffset = $0
-                                    }
+                                    .onPreferenceChange(OffsetKey.self) { scrollOffset = $0 }
                             }
                         }
                     
@@ -59,7 +71,8 @@ struct SwipeAction<Content: View>: View {
                 .scrollTargetLayout()
                 .visualEffect { content, geometryProxy in
                     content
-               //         .offset(x: scrollOffset(geometryProxy))
+                    // TODO: Evaluate if scrollOffset modifier should be reinstated
+                    // .offset(x: scrollOffset(geometryProxy))
                 }
             }
             .scrollIndicators(.hidden)
@@ -69,8 +82,8 @@ struct SwipeAction<Content: View>: View {
                     Rectangle()
                         .fill(lastAction.tint)
                         .opacity(scrollOffset == .zero ? 0 : 1)
+                    }
                 }
-            }
             .clipShape(.rect(cornerRadius: cornerRadius))
             .rotationEffect(.init(degrees: direction == .leading ? 180 : 0))
         }
@@ -78,10 +91,10 @@ struct SwipeAction<Content: View>: View {
         .transition(CustomTransition())
     }
     
-    /// Action Buttons
+    /// Creates the action buttons revealed by swiping
+    /// - Parameter resetPosition: Closure to reset the scroll position
     @ViewBuilder
     func ActionButtons(resetPosition: @escaping () -> ()) -> some View {
-        /// Each Button Will Have 100 Width
         Rectangle()
             .fill(.clear)
             .frame(width: CGFloat(filteredActions.count) * 100)
@@ -94,7 +107,6 @@ struct SwipeAction<Content: View>: View {
                                 resetPosition()
                                 try? await Task.sleep(for: .seconds(0.3))
                                 button.action()
-                                /// Optional
                                 try? await Task.sleep(for: .seconds(0.05))
                                 isEnabled = true
                             }
@@ -114,18 +126,19 @@ struct SwipeAction<Content: View>: View {
             }
     }
     
+    /// Calculates the scroll offset based on geometry
     func scrollOffset(_ proxy: GeometryProxy) -> CGFloat {
         let minX = proxy.frame(in: .scrollView(axis: .horizontal)).minX
-        
         return (minX > 0 ? -minX : 0)
     }
     
+    /// Filtered list of enabled actions
     var filteredActions: [Action] {
-        return actions.filter({ $0.isEnabled })
+        actions.filter { $0.isEnabled }
     }
 }
 
-/// Offset Key
+/// Preference key for tracking scroll offset
 struct OffsetKey: PreferenceKey {
     static var defaultValue: CGFloat = .zero
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
@@ -133,14 +146,13 @@ struct OffsetKey: PreferenceKey {
     }
 }
 
-/// Custom Transition
+/// Custom transition effect for swipe animation
 struct CustomTransition: Transition {
     func body(content: Content, phase: TransitionPhase) -> some View {
         content
             .mask {
                 GeometryReader {
                     let size = $0.size
-                    
                     Rectangle()
                         .offset(y: phase == .identity ? 0 : -size.height)
                 }
@@ -149,24 +161,22 @@ struct CustomTransition: Transition {
     }
 }
 
-/// Swipe Direction
+/// Direction of the swipe action
 enum SwipeDirection {
     case leading
     case trailing
     
     var alignment: Alignment {
         switch self {
-        case .leading:
-            return .leading
-        case .trailing:
-            return .trailing
+        case .leading: return .leading
+        case .trailing: return .trailing
         }
     }
 }
 
-/// Action Model
+/// Model representing a single action button
 struct Action: Identifiable {
-    private(set) var id: UUID = .init()
+    let id: UUID = .init()
     var tint: Color
     var icon: String
     var iconFont: Font = .title
@@ -181,4 +191,3 @@ struct ActionBuilder {
         return components
     }
 }
-

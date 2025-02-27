@@ -21,7 +21,7 @@ struct LogoView: View {
             Image(systemName: "gearshape")
                 .resizable()
                 .frame(width: Constants.gearSize, height: Constants.gearSize)  // Smaller gear size
-                .foregroundStyle(.primary)            // System gear color
+                .foregroundStyle(.remark)            // System gear color
                 .opacity(gearOpacity)                   // Dynamic opacity
                 .rotationEffect(.degrees(rotationAngle)) // Rotation animation
                 .onAppear(perform: startAnimation)      // Start animation on appear
@@ -31,19 +31,16 @@ struct LogoView: View {
             HStack(spacing: Constants.textSpacing) {
                 Text("Daily")
                     .font(.caption)                     // Smaller font for toolbar
-                    .fontDesign(.serif)
                     .fontWeight(.bold)
                     .foregroundStyle(.blue)
                 
                 Text("Grind")
                     .font(.caption)
-                    .fontDesign(.serif)
                     .fontWeight(.bold)
                     .foregroundStyle(.taskColor7)       // Assuming taskColor7 is defined elsewhere
                 
                 Text("1.0")
                     .font(.caption2)                    // Even smaller version number
-                    .fontDesign(.serif)
                     .foregroundStyle(.blue)
             }
             .accessibilityElement(children: .ignore)
@@ -59,9 +56,9 @@ struct LogoView: View {
         static let finalGearOpacity: Double = 0.3    // Final gear opacity
         static let spacing: CGFloat = 4              // Space between gear and text
         static let textSpacing: CGFloat = 1          // Tight spacing between text elements
-        static let fastDuration: Double = 0.4        // Fast spin duration
-        static let slowDuration: Double = 0.6        // Slow-down duration
-        static let fadeDuration: Double = 0.3        // Opacity fade duration
+        static let fastDuration: Double = 0.6        // Fast spin duration
+        static let slowDuration: Double = 0.4       // Slow-down duration
+        static let fadeDuration: Double = 0.2        // Opacity fade duration
         static let fastRotations: Double = 2         // Number of fast rotations
         static let maxHeight: CGFloat = 45           // Max height to fit toolbar
     }

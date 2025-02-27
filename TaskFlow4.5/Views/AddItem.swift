@@ -72,16 +72,16 @@ struct AddItem: View {
     private var backgroundView: some View {
         LinearGradient(
             gradient: Gradient(colors: [
-                category.color.opacity(0.9),   // High opacity for strong category color
-                .gray.darker().opacity(0.8),   // Darker gray for contrast (assumes .darker() extension)
-                .gray.opacity(0.7)             // Solid base to ensure visibility
+                .lightGrey.opacity(0.2),   // High opacity for strong category color
+                .gray.darker().opacity(0.4),   // Darker gray for contrast (assumes .darker() extension)
+ //               .gray.opacity(0.3)             // Solid base to ensure visibility
             ]),
             startPoint: .topLeading,           // Gradient starts at top-left
             endPoint: .bottomTrailing          // Gradient ends at bottom-right
         )
         .ignoresSafeArea()                     // Extends to screen edges
-        .scaleEffect(categoryAnimationTrigger ? 1.1 : 1.0) // Scales slightly on category change
-        .animation(.spring(response: 0.5, dampingFraction: 0.9), value: categoryAnimationTrigger) // Spring animation
+        .scaleEffect(categoryAnimationTrigger ? 1.75 : 1.0) // Scales slightly on category change
+        .animation(.spring(response: 0.4, dampingFraction: 0.9), value: categoryAnimationTrigger) // Spring animation
         .onChange(of: category) { _, _ in      // Triggers animation when category changes
             withAnimation {
                 categoryAnimationTrigger = true
@@ -102,11 +102,10 @@ struct AddItem: View {
                 categorySection   // Section for selecting category
                 datesSection      // Section for date management
             }
-            .scrollContentBackground(.hidden) // Makes form background transparent to show gradient
+       //     .scrollContentBackground(.visible) // Makes form background transparent to show gradient
             .navigationTitle(title)           // Displays item title in navigation bar
             .toolbar { toolbarItems }         // Adds logo and save button to toolbar
-            .padding(.horizontal, 12)         // Horizontal padding for content
-            .tint(category.color)             // Applies category color to navigation elements
+            .padding(.horizontal, 4)         // Horizontal padding for content
             .foregroundStyle(calculateContrastingColor(background: category.color)) // Ensures text contrast
             .alert("Error", isPresented: $showErrorAlert) { // Shows error alert if save fails
                 Button("OK") { showErrorAlert = false }
@@ -122,7 +121,7 @@ struct AddItem: View {
     private var titleSection: some View {
         Section(header: Text("Title").foregroundStyle(category.color)) {
             CustomTextEditor(remarks: $title, placeholder: "Enter title of item...", minHeight: 35)
-                .background(Color(.white.opacity(0.9)))    // Slightly opaque white for readability
+                .background(Color("LightGrey"))    // Slightly opaque white for readability
                 .foregroundStyle(.primary)                 // Primary text color for contrast
                 .accessibilityLabel("Item Title")
                 .accessibilityHint("Enter the title of your item")
@@ -133,7 +132,7 @@ struct AddItem: View {
     private var remarksSection: some View {
         Section(header: Text("Brief Description").foregroundStyle(category.color)) {
             CustomTextEditor(remarks: $remarks, placeholder: "Enter brief description...", minHeight: 75)
-                .background(Color(.white.opacity(0.7))) // Lighter opacity for distinction
+                .background(Color("LightGrey")) // Lighter opacity for distinction
                 .foregroundStyle(.black)
                 .accessibilityLabel("Item Description")
                 .accessibilityHint("Enter a brief description of your item")
@@ -177,6 +176,15 @@ struct AddItem: View {
     /// Defines toolbar content with logo and save button
     private var toolbarItems: some ToolbarContent {
         Group {
+            ToolbarItem(placement: .topBarLeading) {
+                Button{
+                    HapticsManager.notification(type: .success)
+                    dismiss()
+                } label: {
+                    Text("Cancel")
+                        .foregroundStyle(category.color)
+                }
+            }
             ToolbarItem(placement: .principal) {         // Centered logo
                 LogoView()
                     .padding(.horizontal)
