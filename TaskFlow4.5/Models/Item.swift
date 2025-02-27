@@ -117,6 +117,7 @@ final class Item {
     var tintColor: Color {
         switch tint {
         case "TaskColor 1": return .taskColor1
+        case "MediumGrey": return .mediumGrey
         case "TaskColor 2": return .taskColor2
         case "TaskColor 3": return .taskColor3
         case "TaskColor 4": return .taskColor4

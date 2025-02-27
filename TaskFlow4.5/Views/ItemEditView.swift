@@ -8,6 +8,7 @@
 import SwiftData
 import SwiftUI
 
+/// A view for editing items with category-based color theming and distinct sections
 struct ItemEditView: View {
     // MARK: - Environment Properties
     @Environment(\.modelContext) private var context
@@ -22,7 +23,7 @@ struct ItemEditView: View {
     @State private var dateStarted: Date
     @State private var dateCompleted: Date
     @State private var itemCategory: Category
-    @State private var itemStatus: Item.Status // New state for status
+    @State private var itemStatus: Item.Status
     @State private var categoryAnimationTrigger: Bool = false
     @State private var showErrorAlert: Bool = false
     @State private var errorMessage: String = ""
@@ -35,7 +36,7 @@ struct ItemEditView: View {
     private let initialDateStarted: Date
     private let initialDateCompleted: Date
     private let initialCategory: Category
-    private let initialStatus: Item.Status // New initial value for status
+    private let initialStatus: Item.Status
 
     // MARK: - Initialization
     init(editItem: Item) {
@@ -47,7 +48,7 @@ struct ItemEditView: View {
         _dateStarted = State(initialValue: editItem.dateStarted)
         _dateCompleted = State(initialValue: editItem.dateCompleted)
         _itemCategory = State(initialValue: Category(rawValue: editItem.category) ?? .today)
-        _itemStatus = State(initialValue: Item.Status(rawValue: editItem.status)!) // Initialize status
+        _itemStatus = State(initialValue: Item.Status(rawValue: editItem.status)!)
 
         initialTitle = editItem.title
         initialRemarks = editItem.remarks
@@ -56,7 +57,7 @@ struct ItemEditView: View {
         initialDateStarted = editItem.dateStarted
         initialDateCompleted = editItem.dateCompleted
         initialCategory = Category(rawValue: editItem.category) ?? .today
-        initialStatus = Item.Status(rawValue: editItem.status)! // Store initial status
+        initialStatus = Item.Status(rawValue: editItem.status)!
     }
 
     // MARK: - Body
@@ -72,7 +73,6 @@ struct ItemEditView: View {
     private var backgroundView: some View {
         LinearGradient(
             gradient: Gradient(colors: [
-                itemCategory.color.opacity(0.01),
                 .gray.darker().opacity(0.02),
                 .gray.opacity(0.1)
             ]),
@@ -95,18 +95,18 @@ struct ItemEditView: View {
     // MARK: - Content View
     private var contentView: some View {
         NavigationStack {
-            Form {
-                titleSection
-                remarksSection
-                categorySection
-                statusSection // New section for status
-                datesSection
+            ScrollView {
+                VStack(spacing: 24) {
+                    titleSection
+                    remarksSection
+                    categorySection
+                    statusSection
+                    datesSection
+                }
+                .padding()
             }
-            .scrollContentBackground(.hidden)
             .navigationTitle(title)
             .toolbar { toolbarItems }
-            .padding(.horizontal, 12)
-            .tint(itemCategory.color)
             .foregroundStyle(calculateContrastingColor(background: itemCategory.color))
             .alert("Error", isPresented: $showErrorAlert) {
                 Button("OK") { showErrorAlert = false }
@@ -117,70 +117,171 @@ struct ItemEditView: View {
         }
     }
 
-    // MARK: - Form Sections
+    // MARK: - Section Styling Configuration
+    private struct SectionStyle {
+        static let cornerRadius: CGFloat = 12
+        static let padding: CGFloat = 16
+        static let backgroundOpacity: Double = 0.1
+        static let reducedOpacity: Double = backgroundOpacity * 0.25 // 75% reduction: 0.1 * 0.25 = 0.025
+    }
+
+    // MARK: - Content Sections
     private var titleSection: some View {
-        Section(header: Text("Title").foregroundStyle(itemCategory.color)) {
-            CustomTextEditor(remarks: $title, placeholder: "Enter title of item...", minHeight: 35)
-                .background(Color("LightGrey"))
-                .foregroundStyle(.black)
-                .accessibilityLabel("Item Title")
-                .accessibilityHint("Enter the title of your item")
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Title")
+                .foregroundStyle(itemCategory.color)
+                .font(.headline)
+            
+            LabeledContent {
+                TextField("Enter title of item...", text: $title)
+                    .foregroundStyle(.white)
+                    .textFieldStyle(.roundedBorder)
+                    .submitLabel(.done)
+                    .accessibilityLabel("Item Title")
+                    .accessibilityHint("Enter the title of your item")
+            } label: {
+                EmptyView()
+            }
+            .padding(8)
+            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         }
+        .padding(SectionStyle.padding)
+        .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
+        .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
+        )
     }
 
     private var remarksSection: some View {
-        Section(header: Text("Brief Description").foregroundStyle(itemCategory.color)) {
-            CustomTextEditor(remarks: $remarks, placeholder: "Enter brief description...", minHeight: 75)
-                .background(Color("LightGrey"))
-                .foregroundStyle(.black)
-                .accessibilityLabel("Item Description")
-                .accessibilityHint("Enter a brief description of your item")
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Brief Description")
+                .foregroundStyle(itemCategory.color)
+                .font(.headline)
+            
+            LabeledContent {
+                TextEditor(text: $remarks)
+                    .foregroundStyle(.white)
+                    .frame(minHeight: 85)
+                    .padding(4)
+                    .background(Color("LightGrey").opacity(0.05))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                    )
+                    .accessibilityLabel("Item Description")
+                    .accessibilityHint("Enter a brief description of your item")
+            } label: {
+                EmptyView()
+            }
+            .padding(8)
+            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         }
+        .padding(SectionStyle.padding)
+        .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
+        .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
+        )
     }
 
     private var categorySection: some View {
-        Section(header: Text("Category").foregroundStyle(itemCategory.color)) {
-            CategorySelector(
-                selectedCategory: $itemCategory,
-                animateColor: .constant(itemCategory.color),
-                animate: .constant(false)
-            )
-            .foregroundStyle(.primary)
-            .accessibilityLabel("Category Selector")
-            .accessibilityHint("Choose a category for your item")
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Category")
+                .foregroundStyle(itemCategory.color)
+                .font(.headline)
+            
+            LabeledContent {
+                CategorySelector(
+                    selectedCategory: $itemCategory,
+                    animateColor: .constant(itemCategory.color),
+                    animate: .constant(false)
+                )
+                .foregroundStyle(.primary)
+                .accessibilityLabel("Category Selector")
+                .accessibilityHint("Choose a category for your item")
+            } label: {
+                EmptyView()
+            }
+            .padding(8)
+            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         }
+        .padding(SectionStyle.padding)
+        .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
+        .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
+        )
     }
 
     private var statusSection: some View {
-        Section(header: Text("Status").foregroundStyle(itemCategory.color)) {
-            Picker("Status", selection: $itemStatus) {
-                ForEach (Item.Status.allCases, id: \.self) { status in
-                    Text(status.descr)
-                        .tag(status)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Status")
+                .foregroundStyle(itemCategory.color)
+                .font(.headline)
+            
+            LabeledContent {
+                Picker("Status", selection: $itemStatus) {
+                    ForEach(Item.Status.allCases, id: \.self) { status in
+                        Text(status.descr)
+                            .tag(status)
+                    }
                 }
+                .pickerStyle(.segmented)
+                .accessibilityLabel("Status Picker")
+                .accessibilityHint("Select the status of your item")
+            } label: {
+                EmptyView()
             }
-            .pickerStyle(.segmented)
-            .accessibilityLabel("Status Picker")
-            .accessibilityHint("Select the status of your item")
+            .padding(8)
+            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         }
+        .padding(SectionStyle.padding)
+        .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
+        .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
+        )
     }
 
     private var datesSection: some View {
-        Section(header: Text("Dates").foregroundStyle(itemCategory.color)) {
-            HStack {
-                Text("Created")
-                    .font(.caption)
-                    .foregroundStyle(itemCategory.color)
-                Spacer()
-                Text(dateAdded.formatted(.dateTime))
-                    .font(.caption)
-                    .foregroundStyle(itemCategory.color)
-                    .padding(.trailing, 50)
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Dates")
+                .foregroundStyle(itemCategory.color)
+                .font(.headline)
+            
+            VStack(spacing: 8) {
+                LabeledContent("Created") {
+                    Text(dateAdded.formatted(.dateTime))
+                        .font(.caption)
+                        .foregroundStyle(itemCategory.color)
+                }
+                .foregroundStyle(itemCategory.color)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Created \(dateAdded.formatted(.dateTime))")
+                
+                datePickersForCategory()
             }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Created \(dateAdded.formatted(.dateTime))")
-            datePickersForCategory()
+            .padding(8)
+            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         }
+        .padding(SectionStyle.padding)
+        .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
+        .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
+        )
     }
 
     // MARK: - Toolbar Items
@@ -227,7 +328,7 @@ struct ItemEditView: View {
         editItem.dateStarted = dateStarted
         editItem.dateCompleted = dateCompleted
         editItem.category = itemCategory.rawValue
-        editItem.status = itemStatus.rawValue // Update status
+        editItem.status = itemStatus.rawValue
         do {
             try context.save()
             HapticsManager.notification(type: .success)
@@ -241,26 +342,40 @@ struct ItemEditView: View {
 
     @ViewBuilder
     private func datePickersForCategory() -> some View {
-        DatePicker("Due", selection: $dateDue)
+        VStack(spacing: 12) {
+            LabeledContent("Due") {
+                DatePicker("", selection: $dateDue)
+                    .labelsHidden()
+                    .foregroundStyle(itemCategory.color)
+                    .font(.caption)
+            }
             .foregroundStyle(itemCategory.color)
-            .font(.caption)
             .accessibilityLabel("Due Date")
             .accessibilityHint("Select the due date for your item")
-        
-        if itemCategory == .today || itemCategory == .work {
-            DatePicker("Start", selection: $dateStarted)
+            
+            if itemCategory == .today || itemCategory == .work {
+                LabeledContent("Start") {
+                    DatePicker("", selection: $dateStarted)
+                        .labelsHidden()
+                        .foregroundStyle(itemCategory.color)
+                        .font(.caption)
+                }
                 .foregroundStyle(itemCategory.color)
-                .font(.caption)
                 .accessibilityLabel("Start Date")
                 .accessibilityHint("Select the start date for your item")
-        }
-        
-        if itemCategory == .today {
-            DatePicker("Finish", selection: $dateCompleted)
+            }
+            
+            if itemCategory == .today {
+                LabeledContent("Finish") {
+                    DatePicker("", selection: $dateCompleted)
+                        .labelsHidden()
+                        .foregroundStyle(itemCategory.color)
+                        .font(.caption)
+                }
                 .foregroundStyle(itemCategory.color)
-                .font(.caption)
                 .accessibilityLabel("Completion Date")
                 .accessibilityHint("Select the completion date for your item")
+            }
         }
     }
 
@@ -285,7 +400,7 @@ struct ItemEditView: View {
         let blackLuminance = relativeLuminance(color: .black)
         let whiteContrast = contrastRatio(l1: backgroundLuminance, l2: whiteLuminance)
         let blackContrast = contrastRatio(l1: backgroundLuminance, l2: blackLuminance)
-        return whiteContrast >= 4.5 && whiteContrast >= blackContrast ? .white : .black
+        return whiteContrast >= 7 && whiteContrast >= blackContrast ? .white : .black
     }
 }
 
@@ -312,6 +427,6 @@ extension Color {
         category: Category.today,
         tint: "TaskColor 1"
     )
-     ItemEditView(editItem: sampleItem)
+    ItemEditView(editItem: sampleItem)
         .preferredColorScheme(.light)
 }

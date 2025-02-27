@@ -11,8 +11,8 @@ import SwiftData
 /// A view that displays a card representation of an Item with its details
 struct ItemCardView: View {
     // MARK: - Properties
-    @Environment(\.modelContext) private var context // Access to SwiftData model context
-    let item: Item                                   // The item to display
+    @Environment(\.modelContext) private var context
+    let item: Item                 // The item to display
     
     // Computed property to map the item's category string to a Category enum
     private var category: Category {

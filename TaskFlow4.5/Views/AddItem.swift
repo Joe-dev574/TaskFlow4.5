@@ -9,17 +9,16 @@
 import SwiftData
 import SwiftUI
 
-/// A view for adding or editing items with category-based color theming
+/// A view for adding or editing items with category-based color theming and distinct sections
 struct AddItem: View {
     // MARK: - Environment Properties
-    @Environment(\.modelContext) private var context // Provides access to SwiftData for saving changes
-    @Environment(\.dismiss) private var dismiss      // Allows dismissing the view when done
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
     
     // MARK: - Item Property
-    let item: Item?  // Optional item for editing; nil if creating a new item
+    let item: Item?
     
     // MARK: - State Properties
-    /// View Properties
     @State private var title: String
     @State private var remarks: String
     @State private var dateAdded: Date
@@ -27,15 +26,11 @@ struct AddItem: View {
     @State private var dateStarted: Date
     @State private var dateCompleted: Date
     @State private var category: Category = .health
-    
-    @State private var categoryAnimationTrigger: Bool = false // Triggers background scale animation on category change
-    
-    // MARK: - Error Handling Properties
-    @State private var showErrorAlert: Bool = false // Controls visibility of error alert
-    @State private var errorMessage: String = ""    // Stores error message for display
+    @State private var categoryAnimationTrigger: Bool = false
+    @State private var showErrorAlert: Bool = false
+    @State private var errorMessage: String = ""
     
     // MARK: - Initialization
-    /// Initializes the view with an optional item; sets state from item if provided, otherwise uses defaults
     init(item: Item? = nil) {
         self.item = item
         if let item = item {
@@ -45,7 +40,7 @@ struct AddItem: View {
             _dateDue = State(initialValue: item.dateDue)
             _dateStarted = State(initialValue: item.dateStarted)
             _dateCompleted = State(initialValue: item.dateCompleted)
-            _category = State(initialValue: category) // Fixed: Use item.category, not standalone category
+            _category = State(initialValue: Category(rawValue: item.category) ?? .health)
         } else {
             _title = State(initialValue: "")
             _remarks = State(initialValue: "")
@@ -60,54 +55,51 @@ struct AddItem: View {
     // MARK: - Body
     var body: some View {
         ZStack {
-            backgroundView // Static gradient background with category-based coloring
-            contentView    // Main content including form and navigation
+            backgroundView
+            contentView
         }
-        .dynamicTypeSize(...DynamicTypeSize.xxxLarge) // Supports accessibility text sizes up to xxxLarge
-        .background(backgroundView) // Ensure background is applied at the root level
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
     
     // MARK: - Background View
-    /// Provides a prominent background with category color influence, overriding default phone settings
     private var backgroundView: some View {
         LinearGradient(
             gradient: Gradient(colors: [
-                .lightGrey.opacity(0.2),   // High opacity for strong category color
-                .gray.darker().opacity(0.4),   // Darker gray for contrast (assumes .darker() extension)
- //               .gray.opacity(0.3)             // Solid base to ensure visibility
+                .gray.darker().opacity(0.02),
+                .gray.opacity(0.1)
             ]),
-            startPoint: .topLeading,           // Gradient starts at top-left
-            endPoint: .bottomTrailing          // Gradient ends at bottom-right
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
         )
-        .ignoresSafeArea()                     // Extends to screen edges
-        .scaleEffect(categoryAnimationTrigger ? 1.75 : 1.0) // Scales slightly on category change
-        .animation(.spring(response: 0.4, dampingFraction: 0.9), value: categoryAnimationTrigger) // Spring animation
-        .onChange(of: category) { _, _ in      // Triggers animation when category changes
+        .ignoresSafeArea()
+        .scaleEffect(categoryAnimationTrigger ? 1.1 : 1.0)
+        .animation(.spring(response: 0.5, dampingFraction: 0.9), value: categoryAnimationTrigger)
+        .onChange(of: category) { _, _ in
             withAnimation {
                 categoryAnimationTrigger = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    categoryAnimationTrigger = false // Resets after 0.5s
+                    categoryAnimationTrigger = false
                 }
             }
         }
     }
     
     // MARK: - Content View
-    /// Main content stack with navigation and form
     private var contentView: some View {
         NavigationStack {
-            Form {
-                titleSection      // Section for editing title
-                remarksSection    // Section for editing remarks
-                categorySection   // Section for selecting category
-                datesSection      // Section for date management
+            ScrollView {
+                VStack(spacing: 24) {
+                    titleSection
+                    remarksSection
+                    categorySection
+                    datesSection
+                }
+                .padding()
             }
-       //     .scrollContentBackground(.visible) // Makes form background transparent to show gradient
-            .navigationTitle(title)           // Displays item title in navigation bar
-            .toolbar { toolbarItems }         // Adds logo and save button to toolbar
-            .padding(.horizontal, 4)         // Horizontal padding for content
-            .foregroundStyle(calculateContrastingColor(background: category.color)) // Ensures text contrast
-            .alert("Error", isPresented: $showErrorAlert) { // Shows error alert if save fails
+            .navigationTitle(title)
+            .toolbar { toolbarItems }
+            .foregroundStyle(calculateContrastingColor(background: category.color))
+            .alert("Error", isPresented: $showErrorAlert) {
                 Button("OK") { showErrorAlert = false }
             } message: {
                 Text(errorMessage)
@@ -116,68 +108,146 @@ struct AddItem: View {
         }
     }
     
-    // MARK: - Form Sections
-    /// Section for editing the item title
+    // MARK: - Section Styling Configuration
+    private struct SectionStyle {
+        static let cornerRadius: CGFloat = 12
+        static let padding: CGFloat = 16
+        static let backgroundOpacity: Double = 0.001
+        static let reducedOpacity: Double = backgroundOpacity * 0.25 // 75% reduction: 0.1 * 0.25 = 0.025
+    }
+    
+    // MARK: - Content Sections
     private var titleSection: some View {
-        Section(header: Text("Title").foregroundStyle(category.color)) {
-            CustomTextEditor(remarks: $title, placeholder: "Enter title of item...", minHeight: 35)
-                .background(Color("LightGrey"))    // Slightly opaque white for readability
-                .foregroundStyle(.primary)                 // Primary text color for contrast
-                .accessibilityLabel("Item Title")
-                .accessibilityHint("Enter the title of your item")
-        }
-    }
-    
-    /// Section for editing the item description
-    private var remarksSection: some View {
-        Section(header: Text("Brief Description").foregroundStyle(category.color)) {
-            CustomTextEditor(remarks: $remarks, placeholder: "Enter brief description...", minHeight: 75)
-                .background(Color("LightGrey")) // Lighter opacity for distinction
-                .foregroundStyle(.black)
-                .accessibilityLabel("Item Description")
-                .accessibilityHint("Enter a brief description of your item")
-        }
-    }
-    
-    /// Section for selecting the item category
-    private var categorySection: some View {
-        Section(header: Text("Category").foregroundStyle(category.color)) {
-            CategorySelector(
-                selectedCategory: $category,
-                animateColor: .constant(category.color),
-                animate: .constant(false)
-            )
-            .foregroundStyle(.primary)                     // Primary color for selector text
-            .accessibilityLabel("Category Selector")
-            .accessibilityHint("Choose a category for your item")
-        }
-    }
-    
-    /// Section displaying creation date and dynamic date pickers
-    private var datesSection: some View {
-        Section(header: Text("Dates").foregroundStyle(category.color)) {
-            HStack {
-                Text("Created")
-                    .font(.caption)                        // Standard font for label
-                    .foregroundStyle(category.color)
-                Spacer()
-                Text(dateAdded.formatted(.dateTime))
-                    .font(.caption)                        // Matches label font
-                    .foregroundStyle(category.color)
-                    .padding(.trailing, 50)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Title")
+                .foregroundStyle(category.color) // Preserved foreground style
+                .font(.headline)
+            
+            LabeledContent {
+                TextField("Enter title of item...", text: $title)
+                    .foregroundStyle(.white) // Preserved white text
+                    .textFieldStyle(.roundedBorder)
+                    .submitLabel(.done)
+                    .accessibilityLabel("Item Title")
+                    .accessibilityHint("Enter the title of your item")
+            } label: {
+                EmptyView()
             }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Created \(dateAdded.formatted(.dateTime))")
-            datePickersForCategory()          // Renders category-specific date pickers
+            .padding(8)
+            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         }
+        .padding(SectionStyle.padding)
+        .background(category.color.opacity(SectionStyle.reducedOpacity)) // Reduced opacity by 75%
+        .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                .stroke(category.color.opacity(0.3), lineWidth: 1)
+        )
+    }
+    
+    private var remarksSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Brief Description")
+                .foregroundStyle(category.color) // Preserved foreground style
+                .font(.headline)
+            
+            LabeledContent {
+                TextEditor(text: $remarks)
+                    .foregroundStyle(.mediumGrey) // Preserved white text
+                    .frame(minHeight: 85)
+                    .padding(4)
+                    .background(Color("LightGrey").opacity(0.05))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                    )
+                    .accessibilityLabel("Item Description")
+                    .accessibilityHint("Enter a brief description of your item")
+            } label: {
+                EmptyView()
+            }
+            .padding(8)
+            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        }
+        .padding(SectionStyle.padding)
+        .background(category.color.opacity(SectionStyle.reducedOpacity)) // Reduced opacity by 75%
+        .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                .stroke(category.color.opacity(0.3), lineWidth: 1)
+        )
+    }
+    
+    private var categorySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Category")
+                .foregroundStyle(category.color) // Preserved foreground style
+                .font(.headline)
+            
+            LabeledContent {
+                CategorySelector(
+                    selectedCategory: $category,
+                    animateColor: .constant(category.color),
+                    animate: .constant(false)
+                )
+                .foregroundStyle(.primary)
+                .accessibilityLabel("Category Selector")
+                .accessibilityHint("Choose a category for your item")
+            } label: {
+                EmptyView()
+            }
+            .padding(8)
+            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        }
+        .padding(SectionStyle.padding)
+        .background(category.color.opacity(SectionStyle.reducedOpacity)) // Reduced opacity by 75%
+        .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                .stroke(category.color.opacity(0.4), lineWidth: 1)
+        )
+    }
+    
+    private var datesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Dates")
+                .foregroundStyle(category.color) // Preserved foreground style
+                .font(.headline)
+            
+            VStack(spacing: 8) {
+                LabeledContent("Created") {
+                    Text(dateAdded.formatted(.dateTime))
+                        .font(.callout)
+                        .padding(.trailing, 50)
+                }
+                .foregroundStyle(category.color) // Preserved foreground style
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Created \(dateAdded.formatted(.dateTime))")
+                
+                datePickersForCategory()
+            }
+            .padding(8)
+  //          .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        }
+        .padding(SectionStyle.padding)
+        .background(category.color.opacity(SectionStyle.reducedOpacity)) // Reduced opacity by 75%
+        .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                .stroke(category.color.opacity(0.4), lineWidth: 1)
+        )
     }
     
     // MARK: - Toolbar Items
-    /// Defines toolbar content with logo and save button
     private var toolbarItems: some ToolbarContent {
         Group {
             ToolbarItem(placement: .topBarLeading) {
-                Button{
+                Button {
                     HapticsManager.notification(type: .success)
                     dismiss()
                 } label: {
@@ -185,19 +255,19 @@ struct AddItem: View {
                         .foregroundStyle(category.color)
                 }
             }
-            ToolbarItem(placement: .principal) {         // Centered logo
+            ToolbarItem(placement: .principal) {
                 LogoView()
                     .padding(.horizontal)
                     .accessibilityLabel("App Logo")
             }
-            ToolbarItem(placement: .topBarTrailing) {    // Save button on right
+            ToolbarItem(placement: .topBarTrailing) {
                 Button("Save") {
-                    save()                     // Saves changes when tapped
+                    save()
                 }
                 .font(.callout)
                 .foregroundStyle(.white)
                 .buttonStyle(.borderedProminent)
-                .tint(category.color)                // Button matches category color
+                .tint(category.color)
                 .accessibilityLabel("Save Changes")
                 .accessibilityHint("Tap to save your edited item.")
             }
@@ -205,41 +275,53 @@ struct AddItem: View {
     }
     
     // MARK: - Private Methods
-    /// Saves edited item or creates new item in the model context
     private func save() {
-        // Creating new item: instantiate and insert into context
-                let newItem = Item(title: title, remarks: remarks, dateAdded: dateAdded, dateDue: dateDue, dateStarted: dateStarted, dateCompleted: dateCompleted, category: category)
-                context.insert(newItem)
-            do {
-                try context.save()                          // Persists changes to SwiftData
-                HapticsManager.notification(type: .success) // Success haptic feedback
-                dismiss()                                   // Closes the view
-            } catch {
-                errorMessage = "Failed to save changes: \(error.localizedDescription)"
-                showErrorAlert = true
-                print("Save error: \(error.localizedDescription)") // Logs error for debugging
-            }
-        }
-    
-    /// Renders date pickers based on category with reduced text size
-    @ViewBuilder
-    private func datePickersForCategory() -> some View {
-        DatePicker("Due", selection: $dateDue)
-            .foregroundStyle(category.color)
-            .font(.caption)
-            .accessibilityLabel("Due Date")
-            .accessibilityHint("Select the due date for your item")
-        
-        if category == .today || category == .work {
-            DatePicker("Start", selection: $dateStarted)
-                .foregroundStyle(category.color)
-                .font(.caption)                     // Reduced size
-                .accessibilityLabel("Start Date")
-                .accessibilityHint("Select the start date for your item")
+        let newItem = Item(
+            title: title,
+            remarks: remarks,
+            dateAdded: dateAdded,
+            dateDue: dateDue,
+            dateStarted: dateStarted,
+            dateCompleted: dateCompleted,
+            category: category
+        )
+        context.insert(newItem)
+        do {
+            try context.save()
+            HapticsManager.notification(type: .success)
+            dismiss()
+        } catch {
+            errorMessage = "Failed to save changes: \(error.localizedDescription)"
+            showErrorAlert = true
+            print("Save error: \(error.localizedDescription)")
         }
     }
     
-    /// Calculates luminance for WCAG contrast compliance
+    @ViewBuilder
+    private func datePickersForCategory() -> some View {
+        VStack(spacing: 12) {
+            LabeledContent("Due") {
+                DatePicker("", selection: $dateDue)
+                    .labelsHidden()
+                    .font(.caption)
+            }
+            .foregroundStyle(category.color) // Preserved foreground style
+            .accessibilityLabel("Due Date")
+            .accessibilityHint("Select the due date for your item")
+            
+            if category == .today || category == .work {
+                LabeledContent("Start") {
+                    DatePicker("", selection: $dateStarted)
+                        .labelsHidden()
+                        .font(.callout)
+                }
+                .foregroundStyle(category.color) // Preserved foreground style
+                .accessibilityLabel("Start Date")
+                .accessibilityHint("Select the start date for your item")
+            }
+        }
+    }
+    
     private func relativeLuminance(color: Color) -> Double {
         let uiColor = UIColor(color)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
@@ -250,24 +332,30 @@ struct AddItem: View {
         return 0.2126 * r + 0.7152 * g + 0.0722 * b
     }
     
-    /// Computes contrast ratio between two luminance values
     private func contrastRatio(l1: Double, l2: Double) -> Double {
         let lighter = max(l1, l2), darker = min(l1, l2)
-        return (lighter + 0.05) / (darker + 0.05) // Fixed: Reverted to standard WCAG formula
+        return (lighter + 0.05) / (darker + 0.05)
     }
     
-    /// Selects black or white based on contrast with background
     private func calculateContrastingColor(background: Color) -> Color {
         let backgroundLuminance = relativeLuminance(color: background)
         let whiteLuminance = relativeLuminance(color: .white)
         let blackLuminance = relativeLuminance(color: .black)
         let whiteContrast = contrastRatio(l1: backgroundLuminance, l2: whiteLuminance)
         let blackContrast = contrastRatio(l1: backgroundLuminance, l2: blackLuminance)
-        return whiteContrast >= 4.5 && whiteContrast >= blackContrast ? .white : .black
+        return whiteContrast >= 7 && whiteContrast >= blackContrast ? .white : .black
     }
 }
 
 // MARK: - Preview
 #Preview {
-    AddItem(item: Item(title: "test", remarks: "making all kinds of remarks ere we go", dateAdded: .now, dateDue: .distantFuture, dateStarted: .distantPast, dateCompleted: .distantFuture, category: .family))
+    AddItem(item: Item(
+        title: "test",
+        remarks: "making all kinds of remarks ere we go",
+        dateAdded: .now,
+        dateDue: .distantFuture,
+        dateStarted: .distantPast,
+        dateCompleted: .distantFuture,
+        category: .family
+    ))
 }

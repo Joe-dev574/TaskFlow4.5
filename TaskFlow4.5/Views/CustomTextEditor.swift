@@ -28,7 +28,7 @@ struct CustomTextEditor: View {
             // Main text editor component
             TextEditor(text: $remarks)
                 .scrollContentBackground(.hidden)    // Removes default background
-                .background(.background.opacity(0.4)) // Custom subtle background
+ //               .background(.background.opacity(0.4)) // Custom subtle background
                 .font(.system(size: 16))             // Set font size
                 .fontDesign(.serif)                  // Use serif font style
                 .frame(minHeight: minHeight)         // Enforce minimum height
