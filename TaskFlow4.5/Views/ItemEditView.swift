@@ -121,8 +121,8 @@ struct ItemEditView: View {
     private struct SectionStyle {
         static let cornerRadius: CGFloat = 12
         static let padding: CGFloat = 16
-        static let backgroundOpacity: Double = 0.1
-        static let reducedOpacity: Double = backgroundOpacity * 0.25 // 75% reduction: 0.1 * 0.25 = 0.025
+        static let backgroundOpacity: Double = 0.001
+        static let reducedOpacity: Double = backgroundOpacity * 0.25 // 1175% reduction: 0.001 * 0.25 = 0.025
     }
 
     // MARK: - Content Sections
@@ -134,7 +134,7 @@ struct ItemEditView: View {
             
             LabeledContent {
                 TextField("Enter title of item...", text: $title)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.mediumGrey)
                     .textFieldStyle(.roundedBorder)
                     .submitLabel(.done)
                     .accessibilityLabel("Item Title")
@@ -163,7 +163,7 @@ struct ItemEditView: View {
             
             LabeledContent {
                 TextEditor(text: $remarks)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.mediumGrey)
                     .frame(minHeight: 85)
                     .padding(4)
                     .background(Color("LightGrey").opacity(0.05))
@@ -261,14 +261,21 @@ struct ItemEditView: View {
             
             VStack(spacing: 8) {
                 LabeledContent("Created") {
-                    Text(dateAdded.formatted(.dateTime))
-                        .font(.caption)
-                        .foregroundStyle(itemCategory.color)
-                }
-                .foregroundStyle(itemCategory.color)
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("Created \(dateAdded.formatted(.dateTime))")
-                
+                    ZStack{
+                        RoundedRectangle(cornerRadius: 7)
+                            .foregroundStyle(.gray.opacity(0.2))
+                        
+                        Text(dateAdded.formatted(.dateTime))
+                            .font(.system(size: 16))
+                            .foregroundStyle(.black)
+                        
+                    }
+                    .frame(width: 195, height: 35)
+                    .foregroundStyle(itemCategory.color)
+                    .padding(.trailing, 3)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Created \(dateAdded.formatted(.dateTime))")
+                }.foregroundStyle(itemCategory.color)
                 datePickersForCategory()
             }
             .padding(8)

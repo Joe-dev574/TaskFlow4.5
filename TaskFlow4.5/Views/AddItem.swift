@@ -113,7 +113,7 @@ struct AddItem: View {
         static let cornerRadius: CGFloat = 12
         static let padding: CGFloat = 16
         static let backgroundOpacity: Double = 0.001
-        static let reducedOpacity: Double = backgroundOpacity * 0.25 // 75% reduction: 0.1 * 0.25 = 0.025
+        static let reducedOpacity: Double = backgroundOpacity * 0.25 // 1175% reduction: 0.001 * 0.25 = 0.025
     }
     
     // MARK: - Content Sections
@@ -125,7 +125,7 @@ struct AddItem: View {
             
             LabeledContent {
                 TextField("Enter title of item...", text: $title)
-                    .foregroundStyle(.white) // Preserved white text
+                    .foregroundStyle(.mediumGrey) // Preserved white text
                     .textFieldStyle(.roundedBorder)
                     .submitLabel(.done)
                     .accessibilityLabel("Item Title")
