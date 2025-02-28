@@ -75,7 +75,7 @@ struct ItemScreen: View {
         HStack(spacing: 8) {                              // Reduced crowding with tighter spacing
             VStack(alignment: .leading, spacing: 2) {     // Compact vertical stack for date
                 Text(currentDate.format("MMMM YYYY"))     // Combines month and year in one line
-                    .font(.subheadline.bold())            // Smaller, bold font for clarity
+                    .font(.headline.bold())            // Smaller, bold font for clarity
                     .foregroundStyle(.blue)
                 
                 Text(currentDate.format("EEEE, d"))       // Day and weekday on second line
@@ -85,7 +85,7 @@ struct ItemScreen: View {
             
             Spacer()                                      // Pushes logo to the right
             
-            LogoView()                                    // Compact logo
+            GearButtonView()                                 // Compact logo
                 .frame(width: 30, height: 25)             // Reduced size for toolbar fit
                 .foregroundStyle(.taskColor7)
         }
@@ -109,7 +109,7 @@ struct ItemScreen: View {
             }
             
             ToolbarItem(placement: .principal) {             // Custom header in center
-                headerView()
+                headerView().padding(.bottom, 7)
             }
             
             ToolbarItem(placement: .navigationBarTrailing) { // Profile navigation link

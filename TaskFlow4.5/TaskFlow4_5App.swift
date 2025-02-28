@@ -12,7 +12,7 @@ import SwiftData
 struct TaskFlow4_5App: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self, ItemTask.self, Tag.self
+            Item.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

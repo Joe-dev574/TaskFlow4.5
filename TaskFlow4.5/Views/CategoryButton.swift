@@ -16,7 +16,7 @@ struct CategoryButton: View {
     var body: some View {
         VStack{
             Text(category.rawValue.uppercased())
-                .font(.system(size: 13))
+                .font(.system(size: 14))
                 .padding(.vertical, 4)
                 .frame(maxWidth: .infinity)
                 .background(

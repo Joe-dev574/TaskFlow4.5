@@ -20,7 +20,7 @@ struct TagView: View {
             Group{
                 if tags.isEmpty {
                     ContentUnavailableView {
-                        Image(systemName: "bookmark.fill")
+                        Image(systemName: "tag.fill")
                             .font(.largeTitle)
                     } description: {
                         Text("Create a tag for some focus and organization.")

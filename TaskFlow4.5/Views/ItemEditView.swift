@@ -41,7 +41,7 @@ struct ItemEditView: View {
     private let initialCategory: Category             // Initial category for change detection
     private let initialStatus: Item.Status            // Initial status for change detection
     private let initialTags: [Tag]?                   // Initial tags for change detection
-
+    
     // MARK: - Initialization
     init(editItem: Item) {
         self.item = editItem                         // Initialize the immutable item reference
@@ -68,7 +68,7 @@ struct ItemEditView: View {
         initialStatus = Item.Status(rawValue: editItem.status)!
         initialTags = editItem.tags                  // Capture initial tags for comparison
     }
-
+    
     // MARK: - Body
     var body: some View {
         ZStack {
@@ -77,7 +77,7 @@ struct ItemEditView: View {
         }
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)  // Support for large text sizes
     }
-
+    
     // MARK: - Background View
     private var backgroundView: some View {
         LinearGradient(
@@ -100,7 +100,7 @@ struct ItemEditView: View {
             }
         }
     }
-
+    
     // MARK: - Content View
     private var contentView: some View {
         NavigationStack {
@@ -126,22 +126,22 @@ struct ItemEditView: View {
             }
         }
     }
-
+    
     // MARK: - Section Styling Configuration
     private struct SectionStyle {
         static let cornerRadius: CGFloat = 12        // Corner radius for sections
         static let padding: CGFloat = 16             // Padding for sections
-        static let backgroundOpacity: Double = 0.001 // Base background opacity
-        static let reducedOpacity: Double = backgroundOpacity * 0.35  // Reduced opacity for layering
+        static let backgroundOpacity: Double = 0.01 // Base background opacity
+        static let reducedOpacity: Double = backgroundOpacity * 0.30  // Reduced opacity for layering
     }
-
+    
     // MARK: - Content Sections
     // MARK: Item Title Section
     private var titleSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Title")
                 .foregroundStyle(.mediumGrey)          // Section title in medium grey
-                .font(.headline)
+                .font(.title3)
             
             LabeledContent {
                 TextField("Enter title of item...", text: $title)
@@ -165,13 +165,13 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-
+    
     // MARK: Item Description Text Editor
     private var remarksSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Brief Description")
                 .foregroundStyle(.mediumGrey)          // Section title in medium grey
-                .font(.headline)
+                .font(.title3)
             
             LabeledContent {
                 TextEditor(text: $remarks)
@@ -198,13 +198,13 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-
+    
     // MARK: Category Section
     private var categorySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Category")
                 .foregroundStyle(.mediumGrey)          // Section title in medium grey
-                .font(.headline)
+                .font(.title3)
             
             LabeledContent {
                 CategorySelector(
@@ -230,21 +230,43 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-
+    
     // MARK: Tag Section
     private var tagsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Tags")
-                .foregroundStyle(.mediumGrey)          // Section title in medium grey
-                .font(.headline)
-            
-            VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading){
+            HStack{
+                Text("Tags")
+                    .foregroundStyle(.mediumGrey)          // Section title in medium grey(off black : off light grey)
+                    .font(.title3)
+                Spacer()
+          //      MARK:  Button to show tags management sheet
+                Button {
+                    HapticsManager.notification(type: .success)
+                    showTags.toggle()
+                } label: {
+                    Label("Manage Tags", systemImage: "tag")
+                        .padding(.horizontal, 7)
+                        .padding(2)
+                        .foregroundStyle(.white)
+                        .background(
+                            RoundedRectangle(cornerRadius: 7)
+                                .fill(itemCategory.color.opacity( 0.7 ).gradient)
+                        )
+                   //     .frame(width: 200, height: 40)
+                }
+                 .sheet(isPresented: $showTags) {
+                    TagView(item: item)
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
+                }.padding(.bottom, 8)
+            }
+            VStack(alignment: .leading){
                 // Display existing tags in a horizontal scroll view
                 if let tags = editItem.tags, !tags.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(tags, id: \.self) { tag in
-                                TagItemView(
+                                TagItemView(    ///actual tag view
                                     tag: tag,
                                     onDelete: {
                                         // Remove tag from the editable item's tags array
@@ -252,56 +274,39 @@ struct ItemEditView: View {
                                             editItem.tags?.remove(at: index)
                                         }
                                     }
-                                )
-                            }
+                                ).padding(.horizontal, 4)
+                                
+                            }.padding(.top, 7)
                         }
                     }
-                    .frame(height: 40)
+                    .frame(height: 50)
                 } else {
                     Text("No tags added")
                         .foregroundStyle(.gray)
                         .font(.subheadline)
                 }
-                
                 // Button to show tags management sheet
-                Button {
-                    HapticsManager.notification(type: .success)  // Haptic feedback on tap
-                    showTags.toggle()                            // Toggle tag management sheet
-                } label: {
-                    Label("Manage Tags", systemImage: "tag")
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 8)
-                        .foregroundStyle(itemCategory.color)     // Match button color to category
-                }
-                .overlay(
-                    RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
-                        .stroke(itemCategory.color.opacity(0.9), lineWidth: 3)
-                )
-                .sheet(isPresented: $showTags) {
-                    TagView(item: editItem)                     // Pass editable item to TagView
-                        .presentationDetents([.medium, .large])
-                        .presentationDragIndicator(.visible)
-                }
+                
+                //                    .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
+                //                    .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
             }
-            .padding(8)
-            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         }
-        .padding(SectionStyle.padding)
-        .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
-        .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
-        .overlay(
-            RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
-                .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
-        )
-    }
-
+            .padding(SectionStyle.padding)
+            .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                    .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
+            )
+        }
+    
+    
     // MARK: Status Section
     private var statusSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Status")
                 .foregroundStyle(.mediumGrey)          // Section title in medium grey
-                .font(.headline)
+                .font(.title3)
             
             LabeledContent {
                 Picker("Status", selection: $itemStatus) {
@@ -328,13 +333,13 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-
+    
     // MARK: Dates Section
     private var datesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Dates")
                 .foregroundStyle(.mediumGrey)          // Section title in medium grey
-                .font(.headline)
+                .font(.title3)
             
             VStack(spacing: 8) {
                 LabeledContent("Created") {
@@ -365,7 +370,7 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-
+    
     // MARK: - Toolbar Items
     private var toolbarItems: some ToolbarContent {
         Group {
@@ -388,7 +393,7 @@ struct ItemEditView: View {
             }
         }
     }
-
+    
     // MARK: - Private Computed Properties
     private var hasFormChanged: Bool {
         // Check if any field has changed from initial values, including tags
@@ -402,7 +407,7 @@ struct ItemEditView: View {
         itemStatus != initialStatus ||
         editItem.tags != initialTags
     }
-
+    
     // MARK: - Private Methods
     private func saveEditedItem() {
         // Update working copy with current values
@@ -426,7 +431,7 @@ struct ItemEditView: View {
             print("Save error: \(error.localizedDescription)")
         }
     }
-
+    //MARK:  DATE PICKERS FOR CATEGORY
     @ViewBuilder
     private func datePickersForCategory() -> some View {
         VStack(spacing: 12) {
@@ -465,7 +470,7 @@ struct ItemEditView: View {
             }
         }
     }
-
+    //MARK:  FUNCTIONS
     private func relativeLuminance(color: Color) -> Double {
         let uiColor = UIColor(color)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
@@ -475,12 +480,12 @@ struct ItemEditView: View {
         let b = blue <= 0.03928 ? blue / 12.92 : pow((blue + 0.055) / 1.055, 2.4)
         return 0.2126 * r + 0.7152 * g + 0.0722 * b
     }
-
+    
     private func contrastRatio(l1: Double, l2: Double) -> Double {
         let lighter = max(l1, l2), darker = min(l1, l2)
         return (lighter + 0.05) / (darker + 0.05)
     }
-
+    
     private func calculateContrastingColor(background: Color) -> Color {
         // Calculate contrasting color for readability
         let backgroundLuminance = relativeLuminance(color: background)
@@ -490,75 +495,107 @@ struct ItemEditView: View {
         let blackContrast = contrastRatio(l1: backgroundLuminance, l2: blackLuminance)
         return whiteContrast >= 7 && whiteContrast >= blackContrast ? .white : .black
     }
-}
-
-// MARK: - Tag Item View
-struct TagItemView: View {
-    let tag: Tag            // The tag to display
-    let onDelete: () -> Void  // Closure to handle tag deletion
     
-    var body: some View {
-        HStack(spacing: 4) {
-            Text(tag.name)
-                .foregroundStyle(Color("MediumGrey"))     // Use converted tag color for text
-                .padding(.vertical, 5)
-                .padding(.horizontal, 10)
+    
+    
+    
+    /// Displays a tag with its name overlaid on a tag icon, with a delete button.
+    struct TagItemView: View {
+        let tag: Tag            // The tag to display
+        let onDelete: () -> Void  // Closure to handle tag deletion
+        
+        @State  var showTags = false
+        
+        // MARK: - Body
+        var body: some View {
             
-            Button(action: onDelete) {
-                Image(systemName: "minus.circle")
-                    .foregroundStyle(.mediumGrey.opacity(0.80)) // Use converted tag color for delete icon
-                    .frame(width: 35, height: 35)
-            }
-            .buttonStyle(.plain)
-        }
-        .background(tag.swiftUIColor.opacity(0.5))     // Subtle background with tag's color
-        .clipShape(Capsule())
-        .overlay(
-            Capsule()
-                .stroke(tag.swiftUIColor.opacity(0.5), lineWidth: 1)  // Border with tag's color
-        )
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Tag: \(tag.name)")
-        .accessibilityAddTraits(.isButton)
-    }
-}
-
-// MARK: - Color Extension
-extension Color {
-    func darker() -> Color {
-        // Create a darker version of the color
-        let uiColor = UIColor(self)
-        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        return Color(red: max(red - 0.2, 0), green: max(green - 0.2, 0), blue: max(blue - 0.2, 0), opacity: alpha)
-    }
-}
-
-// MARK: - Tag Extension
-extension Tag {
-    var swiftUIColor: Color {
-        switch color.lowercased() {
-        case "red": return .red
-        case "blue": return .blue
-        case "green": return .green
-        case "yellow": return .yellow
-        case "purple": return .purple
-        case "orange": return .orange
-        case "gray": return .gray
-        case "black": return .black
-        case "white": return .white
-        default:
-            // Handle hex codes (e.g., "#FF0000") or fallback to gray
-            if color.hasPrefix("#"), color.count == 7 {
-                let hex = String(color.dropFirst())
-                if let intValue = UInt32(hex, radix: 16) {
-                    let r = Double((intValue >> 16) & 0xFF) / 255.0
-                    let g = Double((intValue >> 8) & 0xFF) / 255.0
-                    let b = Double(intValue & 0xFF) / 255.0
-                    return Color(red: r, green: g, blue: b)
+            VStack{
+                
+                HStack(spacing: 4) {
+                    // Tag icon with text overlay
+                    HStack(spacing: 0) {
+                        Image(systemName: "tag.fill")  // Using filled tag icon
+                            .resizable()
+                            .frame(width: 30, height: 30)  // Large enough for text overlay
+                            .foregroundStyle(tag.hexColor)  // Fill with tag's color
+                        
+                        Text(tag.name)
+                            .foregroundStyle(.mediumGrey)  // Medium Grey text for contrast
+                            .font(.system(size: 12, weight: .medium))
+                        // Padding to fit within tag shape
+                        // Delete button
+                        Button(action: onDelete) {
+                            Image(systemName: "minus.circle")
+                                .foregroundStyle(.lightGrey)  // Consistent delete icon color
+                                .frame(width: 15, height: 15)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Tag: \(tag.name)")
+                    .accessibilityAddTraits(.isButton)
                 }
             }
-            return .gray  // Fallback color if unrecognized
         }
     }
 }
+    
+    
+    // MARK: - Color Extension
+    extension Color {
+        /// Returns a darker version of the color by reducing RGB values
+        func darker() -> Color {
+            let uiColor = UIColor(self)
+            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+            uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+            return Color(red: max(red - 0.2, 0), green: max(green - 0.2, 0), blue: max(blue - 0.2, 0), opacity: alpha)
+        }
+    }
+    
+    // MARK: - Tag Extension
+    extension Tag {
+        /// Converts the tag's color string to a SwiftUI Color
+        var swiftUIColor: Color {
+            switch color.lowercased() {
+            case "red": return .red
+            case "blue": return .blue
+            case "green": return .green
+            case "yellow": return .yellow
+            case "purple": return .purple
+            case "orange": return .orange
+            case "gray": return .gray
+            case "black": return .black
+            case "white": return .white
+            default:
+                // Handle hex codes (e.g., "#FF0000") or fallback to gray
+                if color.hasPrefix("#"), color.count == 7 {
+                    let hex = String(color.dropFirst())
+                    if let intValue = UInt32(hex, radix: 16) {
+                        let r = Double((intValue >> 16) & 0xFF) / 255.0
+                        let g = Double((intValue >> 8) & 0xFF) / 255.0
+                        let b = Double(intValue & 0xFF) / 255.0
+                        return Color(red: r, green: g, blue: b)
+                    }
+                }
+                return .gray  // Fallback color if unrecognized
+            }
+        }
+    }
+    
+    // MARK: - Preview (Assuming Tag struct exists)
+    //#Preview {
+    //
+    //    ItemEditView(editItem: Item(title: "Joe", remarks: "Is the man", dateAdded: .now, dateDue: .distantFuture, dateStarted: .now, dateCompleted: .distantFuture, status: .Active, category: .today, tintColor: Color.blue, tags: .none))
+    
+    //    TagItemView(
+    //        tag: Tag(name: "Example", color: "blue"),
+    //        onDelete: { print("Delete tapped") }
+    //    )
+    //
+    //    .background(Color(.systemBackground))
+    
+    
+    // MARK: - Color Extension
+    
+
+        
