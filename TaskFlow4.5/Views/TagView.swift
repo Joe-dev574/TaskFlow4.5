@@ -1,8 +1,8 @@
 //
 //  TagView.swift
-//  Flow
+//  TaskFlow4.5
 //
-//  Created by Joseph DeWeese on 2/2/25.
+//  Created by Joseph DeWeese on 2/27/25.
 //
 
 import SwiftUI
@@ -90,7 +90,7 @@ struct TagView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") {
+                    Button("Back") {
                         dismiss()
                     }
                 }
@@ -115,6 +115,6 @@ struct TagView: View {
 }
 
 #Preview {
-    TagView(item: Item(category: .family))
+    TagView(item: Item(category: .family, tintColor: TintColor.init(color: "Red", value: .red)))
    
 }

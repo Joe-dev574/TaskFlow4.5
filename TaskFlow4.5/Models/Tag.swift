@@ -23,4 +23,3 @@ class Tag {
         Color(hex: self.color) ?? .orange
     }
 }
-

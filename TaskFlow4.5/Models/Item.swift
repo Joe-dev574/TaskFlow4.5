@@ -39,7 +39,8 @@ final class Item {
     var status: Status.RawValue
     
     /// Tint color identifier for UI representation
-    var tint: String
+    var tintColor: String
+    
     @Relationship(inverse: \Tag.items)
     var tags: [Tag]?
     /// Relationship to ItemTask objects with cascade delete rule
@@ -71,7 +72,7 @@ final class Item {
         dateCompleted: Date = .now,
         status: Status = .Active,
         category: Category = .scheduled,
-        tint: String = "TaskColor 1",  // Added default value
+        tintColor: TintColor,
         tags: [Tag]? = nil
     ) {
         self.title = title
@@ -82,8 +83,7 @@ final class Item {
         self.dateCompleted = dateCompleted
         self.category = category.rawValue
         self.status = status.rawValue
-        
-        self.tint = tint
+        self.tintColor = tintColor.color
         self.tags = tags
     }
     var icon: Image {
@@ -95,6 +95,15 @@ final class Item {
         case .Hold:
             Image(systemName: "books.vertical.fill")
         }
+    }
+    /// Extracting Color Value from tintColor String
+    @Transient
+    var color: Color {
+        return tints.first(where: { $0.color == tintColor })?.value ?? Constants.shared.tintColor
+    }
+    @Transient
+    var tint: TintColor? {
+        return tints.first(where: { $0.color == tintColor })
     }
     @Transient
     var rawCategory: Category? {
@@ -113,29 +122,7 @@ final class Item {
         Calendar.current.dateComponents([.day], from: .now, to: dateDue).day
     }
     
-    /// Computed property for tint color based on tint string
-    var tintColor: Color {
-        switch tint {
-        case "TaskColor 1": return .taskColor1
-        case "MediumGrey": return .mediumGrey
-        case "TaskColor 2": return .taskColor2
-        case "TaskColor 3": return .taskColor3
-        case "TaskColor 4": return .taskColor4
-        case "TaskColor 5": return .taskColor5
-        case "TaskColor 6": return .taskColor6
-        case "TaskColor 7": return .taskColor7
-        case "TaskColor 8": return .taskColor8
-        case "TaskColor 9": return .taskColor9
-        case "TaskColor 10": return .taskColor10
-        case "TaskColor 11": return .taskColor11
-        case "TaskColor 12": return .taskColor12
-        case "TaskColor 13": return .taskColor13
-        case "TaskColor 14": return .taskColor14
-        case "TaskColor 15": return .taskColor15
-            
-        default: return .black
-        }
-    }
+ 
     
     
     enum Status: Int, Codable, Identifiable, CaseIterable {

@@ -29,7 +29,8 @@ struct AddItem: View {
     @State private var categoryAnimationTrigger: Bool = false
     @State private var showErrorAlert: Bool = false
     @State private var errorMessage: String = ""
-    
+    /// Random Tint
+    @State var tint: TintColor = tints.randomElement()!
     // MARK: - Initialization
     init(item: Item? = nil) {
         self.item = item
@@ -65,7 +66,7 @@ struct AddItem: View {
     private var backgroundView: some View {
         LinearGradient(
             gradient: Gradient(colors: [
-                .gray.darker().opacity(0.02),
+                .gray.opacity(0.02),
                 .gray.opacity(0.1)
             ]),
             startPoint: .topLeading,
@@ -283,7 +284,8 @@ struct AddItem: View {
             dateDue: dateDue,
             dateStarted: dateStarted,
             dateCompleted: dateCompleted,
-            category: category
+            category: category,
+            tintColor:  tint
         )
         context.insert(newItem)
         do {
@@ -348,14 +350,3 @@ struct AddItem: View {
 }
 
 // MARK: - Preview
-#Preview {
-    AddItem(item: Item(
-        title: "test",
-        remarks: "making all kinds of remarks ere we go",
-        dateAdded: .now,
-        dateDue: .distantFuture,
-        dateStarted: .distantPast,
-        dateCompleted: .distantFuture,
-        category: .family
-    ))
-}

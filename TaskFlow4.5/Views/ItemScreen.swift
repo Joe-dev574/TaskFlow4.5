@@ -35,7 +35,7 @@ struct ItemScreen: View {
             }
             .blur(radius: showAddItemSheet ? 8 : 0)            // Blurs content when sheet is active
             .sheet(isPresented: $showAddItemSheet) {           // Presents sheet for adding new items
-                AddItem(item: Item())
+                AddItem()
                     .presentationDetents([.large])
             }
             .toolbar { toolbarItems }                          // Configures fixed toolbar
