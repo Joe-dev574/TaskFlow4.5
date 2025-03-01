@@ -59,7 +59,7 @@ final class Item {
     ///   - dateDue: Due date (default: now)
     ///   - dateStarted: Start date (default: now)
     ///   - dateCompleted: Completion date (default: now)
-    ///   - category: Associated category (default: .scheduled)
+    ///   - category: Associated category (default: .events)
     ///   - tint: Color identifier (default: "TaskColor 1")
     ///
     ///
@@ -71,7 +71,7 @@ final class Item {
         dateStarted: Date = .now,
         dateCompleted: Date = .now,
         status: Status = .Active,
-        category: Category = .scheduled,
+        category: Category = .events,
         tintColor: TintColor,
         tags: [Tag]? = nil
     ) {

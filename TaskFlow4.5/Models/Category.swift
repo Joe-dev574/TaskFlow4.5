@@ -26,7 +26,7 @@ enum Category: String, CaseIterable {
     // MARK: - Priority/Time-based Cases
     
     /// Represents scheduled or recurring tasks
-    case scheduled = "Scheduled"
+    case events = "Events"
     
     // MARK: - Computed Properties
     
@@ -35,12 +35,12 @@ enum Category: String, CaseIterable {
         switch self {
         case .family:
             return .green // Green for family-related items
-        case .scheduled:
-            return .orange // Orange for scheduled tasks
+        case .events:
+            return .orange // Orange for events tasks
         case .work:
             return .blue // Blue for work items
         case .today:
-            return .brown // System gray color for current day
+            return .oliveDrab // System gray color for current day
         case .health:
             return .red // Red for health-related items
         }
@@ -57,8 +57,8 @@ enum Category: String, CaseIterable {
             return "calendar.and.person" // Calendar with person for work
             
         // Status-Based Symbols
-        case .scheduled:
-            return "repeat" // Repeat symbol for scheduled tasks
+        case .events:
+            return "repeat" // Repeat symbol for events tasks
             
         case .family:
             return "figure.2.and.child.holdinghands" // Family symbol

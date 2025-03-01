@@ -124,16 +124,7 @@ struct AddItem: View {
                 .foregroundStyle(category.color) // Preserved foreground style
                 .font(.headline)
             
-            LabeledContent {
-                TextField("Enter title of item...", text: $title)
-                    .foregroundStyle(.mediumGrey) // Preserved white text
-                    .textFieldStyle(.roundedBorder)
-                    .submitLabel(.done)
-                    .accessibilityLabel("Item Title")
-                    .accessibilityHint("Enter the title of your item")
-            } label: {
-                EmptyView()
-            }
+            CustomTextEditor(remarks: $title, placeholder: "Enter title of your item...", minHeight: 35)
             .padding(8)
             .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
             .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
@@ -152,23 +143,8 @@ struct AddItem: View {
             Text("Brief Description")
                 .foregroundStyle(category.color) // Preserved foreground style
                 .font(.headline)
-            
-            LabeledContent {
-                TextEditor(text: $remarks)
-                    .foregroundStyle(.mediumGrey) // Preserved white text
-                    .frame(minHeight: 85)
-                    .padding(4)
-                    .background(Color("LightGrey").opacity(0.05))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                    )
-                    .accessibilityLabel("Item Description")
-                    .accessibilityHint("Enter a brief description of your item")
-            } label: {
-                EmptyView()
-            }
+            CustomTextEditor(remarks: $remarks, placeholder: "Enter a brief description of your item", minHeight: 85)
+                .foregroundStyle(.mediumGrey) // Preserved white text
             .padding(8)
             .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
             .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
@@ -225,7 +201,7 @@ struct AddItem: View {
                         .font(.callout)
                         .padding(.trailing, 50)
                 }
-                .foregroundStyle(category.color) // Preserved foreground style
+                .foregroundStyle(.mediumGrey) // Preserved foreground style
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("Created \(dateAdded.formatted(.dateTime))")
                 
@@ -307,7 +283,7 @@ struct AddItem: View {
                     .labelsHidden()
                     .font(.caption)
             }
-            .foregroundStyle(category.color) // Preserved foreground style
+            .foregroundStyle(.mediumGrey) // Preserved foreground style
             .accessibilityLabel("Due Date")
             .accessibilityHint("Select the due date for your item")
             
@@ -317,7 +293,7 @@ struct AddItem: View {
                         .labelsHidden()
                         .font(.callout)
                 }
-                .foregroundStyle(category.color) // Preserved foreground style
+                .foregroundStyle(.mediumGrey) // Preserved foreground style
                 .accessibilityLabel("Start Date")
                 .accessibilityHint("Select the start date for your item")
             }

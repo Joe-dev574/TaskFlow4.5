@@ -10,7 +10,7 @@ import SwiftUI
 
 struct NewTagView: View {
     @State private var name = ""
-    @State private var color = Color.red
+    @State private var tagColor = Color.red
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     
@@ -18,9 +18,9 @@ struct NewTagView: View {
         NavigationStack {
             Form {
                 TextField("name", text: $name)
-                ColorPicker("Set the tag color", selection: $color, supportsOpacity: false)
+                ColorPicker("Set the tag color", selection: $tagColor, supportsOpacity: false)
                 Button("Create") {
-                    let newTag = Tag(name: name, color: color.toHexString()!)
+                    let newTag = Tag(name: name, tagColor: tagColor.toHexString()!)
                     context.insert(newTag)
                     dismiss()
                 }

@@ -140,14 +140,12 @@ struct ItemEditView: View {
     private var titleSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Title")
-                .foregroundStyle(.mediumGrey)          // Section title in medium grey
+                .foregroundStyle(itemCategory.color)          // Section title in medium grey
                 .font(.title3)
             
             LabeledContent {
-                TextField("Enter title of item...", text: $title)
+                CustomTextEditor(remarks: $title, placeholder: "Enter title of your item", minHeight: 45)
                     .foregroundStyle(.mediumGrey)
-                    .textFieldStyle(.roundedBorder)
-                    .submitLabel(.done)
                     .accessibilityLabel("Item Title")
                     .accessibilityHint("Enter the title of your item")
             } label: {
@@ -170,25 +168,16 @@ struct ItemEditView: View {
     private var remarksSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Brief Description")
-                .foregroundStyle(.mediumGrey)          // Section title in medium grey
+                .foregroundStyle(itemCategory.color)          // Section title in medium grey
                 .font(.title3)
             
-            LabeledContent {
-                TextEditor(text: $remarks)
-                    .foregroundStyle(.mediumGrey)
-                    .frame(minHeight: 85)
-                    .padding(4)
-                    .background(Color("LightGrey").opacity(0.05))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(uiColor: .tertiarySystemFill), lineWidth: 2))
-                    .accessibilityLabel("Item Description")
-                    .accessibilityHint("Enter a brief description of your item")
-            } label: {
-                EmptyView()
-            }
+            CustomTextEditor(remarks: $remarks, placeholder: "Enter a brief description of your item", minHeight: 85)
+                .foregroundStyle(.mediumGrey) // Preserved white text
             .padding(8)
             .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
             .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+            .accessibilityLabel("Item Description")
+            .accessibilityHint("Enter brief description of your item")
         }
         .padding(SectionStyle.padding)
         .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
@@ -203,7 +192,7 @@ struct ItemEditView: View {
     private var categorySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Category")
-                .foregroundStyle(.mediumGrey)          // Section title in medium grey
+                .foregroundStyle(itemCategory.color)          // Section title in medium grey
                 .font(.title3)
             
             LabeledContent {
@@ -236,7 +225,7 @@ struct ItemEditView: View {
         VStack(alignment: .leading){
             HStack{
                 Text("Tags")
-                    .foregroundStyle(.mediumGrey)          // Section title in medium grey(off black : off light grey)
+                    .foregroundStyle(itemCategory.color)          // Section title in medium grey(off black : off light grey)
                     .font(.title3)
                 Spacer()
           //      MARK:  Button to show tags management sheet
@@ -305,7 +294,7 @@ struct ItemEditView: View {
     private var statusSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Status")
-                .foregroundStyle(.mediumGrey)          // Section title in medium grey
+                .foregroundStyle(itemCategory.color)          // Section title in medium grey
                 .font(.title3)
             
             LabeledContent {
@@ -338,7 +327,7 @@ struct ItemEditView: View {
     private var datesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Dates")
-                .foregroundStyle(.mediumGrey)          // Section title in medium grey
+                .foregroundStyle(itemCategory.color)          // Section title in medium grey
                 .font(.title3)
             
             VStack(spacing: 8) {
@@ -355,7 +344,7 @@ struct ItemEditView: View {
                     .padding(.trailing, 3)
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel("Created \(dateAdded.formatted(.dateTime))")
-                }.foregroundStyle(itemCategory.color)
+                }.foregroundStyle(.mediumGrey)
                 datePickersForCategory()
             }
             .padding(8)
@@ -419,7 +408,7 @@ struct ItemEditView: View {
         editItem.dateCompleted = dateCompleted
         editItem.category = itemCategory.rawValue
         editItem.status = itemStatus.rawValue
-        // Note: Tags are updated in-place via the tagsSection
+        // Note: Tags are updated via the tagsSection
         
         do {
             try context.save()              // Save changes to SwiftData
@@ -441,7 +430,7 @@ struct ItemEditView: View {
                     .foregroundStyle(itemCategory.color)
                     .font(.caption)
             }
-            .foregroundStyle(itemCategory.color)
+            .foregroundStyle(.mediumGrey)
             .accessibilityLabel("Due Date")
             .accessibilityHint("Select the due date for your item")
             
@@ -449,10 +438,10 @@ struct ItemEditView: View {
                 LabeledContent("Start") {
                     DatePicker("", selection: $dateStarted)
                         .labelsHidden()
-                        .foregroundStyle(itemCategory.color)
+
                         .font(.caption)
                 }
-                .foregroundStyle(itemCategory.color)
+                .foregroundStyle(.mediumGrey)
                 .accessibilityLabel("Start Date")
                 .accessibilityHint("Select the start date for your item")
             }
@@ -461,7 +450,7 @@ struct ItemEditView: View {
                 LabeledContent("Finish") {
                     DatePicker("", selection: $dateCompleted)
                         .labelsHidden()
-                        .foregroundStyle(itemCategory.color)
+                        .foregroundStyle(.mediumGrey)
                         .font(.caption)
                 }
                 .foregroundStyle(itemCategory.color)
@@ -498,7 +487,7 @@ struct ItemEditView: View {
     
     
     
-    
+    //MARK:  TAGITEM VIEW
     /// Displays a tag with its name overlaid on a tag icon, with a delete button.
     struct TagItemView: View {
         let tag: Tag            // The tag to display
@@ -508,9 +497,7 @@ struct ItemEditView: View {
         
         // MARK: - Body
         var body: some View {
-            
             VStack{
-                
                 HStack(spacing: 4) {
                     // Tag icon with text overlay
                     HStack(spacing: 0) {
@@ -528,9 +515,10 @@ struct ItemEditView: View {
                             Image(systemName: "minus.circle")
                                 .foregroundStyle(.lightGrey)  // Consistent delete icon color
                                 .frame(width: 15, height: 15)
+                                .padding(.horizontal, 1)
                         }
                         .buttonStyle(.plain)
-                    }
+                    }.padding(.horizontal, 2)
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel("Tag: \(tag.name)")
                     .accessibilityAddTraits(.isButton)
@@ -556,7 +544,7 @@ struct ItemEditView: View {
     extension Tag {
         /// Converts the tag's color string to a SwiftUI Color
         var swiftUIColor: Color {
-            switch color.lowercased() {
+            switch tagColor.lowercased() {
             case "red": return .red
             case "blue": return .blue
             case "green": return .green
@@ -568,8 +556,8 @@ struct ItemEditView: View {
             case "white": return .white
             default:
                 // Handle hex codes (e.g., "#FF0000") or fallback to gray
-                if color.hasPrefix("#"), color.count == 7 {
-                    let hex = String(color.dropFirst())
+                if tagColor.hasPrefix("#"), tagColor.count == 7 {
+                    let hex = String(tagColor.dropFirst())
                     if let intValue = UInt32(hex, radix: 16) {
                         let r = Double((intValue >> 16) & 0xFF) / 255.0
                         let g = Double((intValue >> 8) & 0xFF) / 255.0

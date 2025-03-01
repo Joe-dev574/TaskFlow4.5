@@ -27,18 +27,18 @@ struct CustomTabBar: View {
             let allOffset = size.width - (10 * CGFloat(Category.allCases.count - 1))
             
             HStack(spacing: 5) {
-                // Container for regular tabs (excluding scheduled)
-                HStack(spacing: activeTab == .scheduled ? -15 : 8) {
-                    ForEach(Category.allCases.filter { $0 != .scheduled }, id: \.rawValue) { tab in
+                // Container for regular tabs (excluding events)
+                HStack(spacing: activeTab == .events ? -15 : 8) {
+                    ForEach(Category.allCases.filter { $0 != .events }, id: \.rawValue) { tab in
                         ResizableTabButton(tab: tab)
                     }
                     .fontDesign(.serif) // Apply serif font to all tab labels
                 }
                 
                 // Display scheduled tab only when it's active
-                if activeTab == .scheduled {
-                    ResizableTabButton(tab: .scheduled)
-                        .transition(.offset(x: allOffset)) // Animate scheduled tab appearance
+                if activeTab == .events {
+                    ResizableTabButton(tab: .events)
+                        .transition(.offset(x: allOffset)) // Animate events tab appearance
                 }
             }
             .padding(.horizontal, 10) // Horizontal padding for the entire tab bar
@@ -70,7 +70,7 @@ struct CustomTabBar: View {
                     .lineLimit(1)
             }
         }
-        .foregroundStyle(tab == .scheduled ? schemeColor : activeTab == tab ? .white : .gray)
+        .foregroundStyle(tab == .events ? schemeColor : activeTab == tab ? .white : .gray)
         .frame(maxHeight: .infinity) // Fill available height
         .frame(maxWidth: activeTab == tab ? .infinity : nil) // Expand width when active
         .padding(.horizontal, activeTab == tab ? 10 : 15) // Dynamic padding based on state
@@ -84,15 +84,15 @@ struct CustomTabBar: View {
             // Border effect with dynamic padding
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .fill(.background)
-                .padding(activeTab == .scheduled && tab != .scheduled ? -3 : 3)
+                .padding(activeTab == .events && tab != .events ? -3 : 3)
         }
         .contentShape(.rect) // Ensure entire area is tappable
         .onTapGesture {
             // Handle tab selection with animation
-            // Double tap on active tab switches to scheduled tab
-            guard tab != .scheduled else { return }
+            // Double tap on active tab switches to events tab
+            guard tab != .events else { return }
             withAnimation(.bouncy) {
-                activeTab = activeTab == tab ? .scheduled : tab
+                activeTab = activeTab == tab ? .events : tab
             }
         }
     }
@@ -109,7 +109,7 @@ struct CustomTabBar: View {
 #if DEBUG
 struct CustomTabBar_Previews: PreviewProvider {
     static var previews: some View {
-        CustomTabBar(activeTab: .constant(.scheduled))
+        CustomTabBar(activeTab: .constant(.events))
     }
 }
 #endif

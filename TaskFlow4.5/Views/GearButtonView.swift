@@ -72,6 +72,9 @@ struct GearButtonView: View {
         .onAppear(perform: startAnimation)
         .accessibilityLabel("Settings gear button")
         .disabled(!isAnimationComplete)  // Button is inactive during animation
+        .sheet(isPresented: $showSettings) {
+            SettingsView( )
+        }
     }
     
     // MARK: - Adaptive Styling

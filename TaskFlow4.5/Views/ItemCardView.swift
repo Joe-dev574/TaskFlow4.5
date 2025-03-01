@@ -98,9 +98,16 @@ struct ItemCardView: View {
                                 .lineLimit(3)
                                 .padding(.bottom, 4)
                         }
+                        if let tags = item.tags {
+                            ViewThatFits {
+                                TagsStackView(tags: tags)
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    TagsStackView(tags: tags)
+                                }
+                            }
+                        }
                     }
-                    .padding(10)
-                }
+                }.padding(7)
                 // Card border overlay
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)

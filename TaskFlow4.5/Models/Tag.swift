@@ -11,15 +11,15 @@ import SwiftData
 @Model
 class Tag {
     var name: String = ""
-    var color: String = "FF0000"
+    var tagColor: String = "FF0000"
     var items: [Item]?
     
-    init(name: String, color: String) {
+    init(name: String, tagColor: String) {
         self.name = name
-        self.color = color
+        self.tagColor = tagColor
     }
     
     var hexColor: Color {
-        Color(hex: self.color) ?? .orange
+        Color(hex: self.tagColor) ?? .orange
     }
 }
