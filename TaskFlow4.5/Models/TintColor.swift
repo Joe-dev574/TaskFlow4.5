@@ -11,7 +11,7 @@ import SwiftUI
 
 struct TintColor: Identifiable {
     
-    let id: UUID = UUID()
+    let id: UUID = .init()
     
     let color: String
     var value: Color

@@ -64,6 +64,7 @@ struct GearButtonView: View {
                         .stroke(glowColor, lineWidth: 1)
                         .scaleEffect(gearScale * 1.2)
                         .opacity(glowIntensity)
+                        .shadow(color: .black, radius: 3, x: 2, y: 2)
                 )
         }
         .buttonStyle(PlainButtonStyle())  // Removes default button styling
@@ -93,21 +94,21 @@ struct GearButtonView: View {
     
     /// Shadow color with mode-appropriate opacity
     private var shadowColor: Color {
-        colorScheme == .dark ? .gray.opacity(0.4) : .gray.opacity(0.2)
+        colorScheme == .dark ? .gray.opacity(0.5) : .gray.opacity(0.2)
     }
     
     /// Background overlay for contrast enhancement
     private var backgroundOverlay: some View {
         RoundedRectangle(cornerRadius: 8)
-            .fill(colorScheme == .dark ? Color.black.opacity(0.2) : Color.white.opacity(0.2))
-            .shadow(color: shadowColor, radius: 3)
+            .fill(colorScheme == .dark ? Color.black.opacity(0.3) : Color.white.opacity(0.3))
+            .shadow(color: shadowColor, radius: 4)
     }
     
     // MARK: - Constants
     
     /// Static values used throughout the view
     private enum Constants {
-        static let gearSize: CGFloat = 32           // Size of the gear icon
+        static let gearSize: CGFloat = 30           // Size of the gear icon
         static let initialGearOpacity: Double = 1.0 // Starting opacity
         static let finalGearOpacity: Double = 0.85  // Ending opacity after fade
         static let fastDuration: Double = 0.6       // Duration of initial spin
@@ -115,7 +116,7 @@ struct GearButtonView: View {
         static let fadeDuration: Double = 0.25      // Duration of final fade
         static let pulseDuration: Double = 1.0      // Duration of continuous pulse
         static let fastRotations: Double = 3        // Number of full spins
-        static let maxHeight: CGFloat = 45          // Maximum height of the button
+        static let maxHeight: CGFloat = 40          // Maximum height of the button
     }
     
     // MARK: - Animation

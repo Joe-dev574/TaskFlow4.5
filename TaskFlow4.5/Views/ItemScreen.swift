@@ -46,8 +46,8 @@ struct ItemScreen: View {
         }
         .overlay {  // Sidebar overlay with transition
             if showSidebar {
-                SidebarView(isPresented: $showSidebar)
-                    .transition(.move(edge: .leading))
+//                SidebarView(isPresented: $showSidebar)
+//                    .transition(.move(edge: .leading))
             }
         }
     }

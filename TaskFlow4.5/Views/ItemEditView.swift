@@ -393,7 +393,6 @@ struct ItemEditView: View {
         dateStarted != initialDateStarted ||
         dateCompleted != initialDateCompleted ||
         itemCategory != initialCategory ||
-        itemStatus != initialStatus ||
         editItem.tags != initialTags
     }
     
@@ -407,7 +406,6 @@ struct ItemEditView: View {
         editItem.dateStarted = dateStarted
         editItem.dateCompleted = dateCompleted
         editItem.category = itemCategory.rawValue
-        editItem.status = itemStatus.rawValue
         // Note: Tags are updated via the tagsSection
         
         do {
@@ -453,7 +451,7 @@ struct ItemEditView: View {
                         .foregroundStyle(.mediumGrey)
                         .font(.caption)
                 }
-                .foregroundStyle(itemCategory.color)
+                .foregroundStyle(.mediumGrey)
                 .accessibilityLabel("Completion Date")
                 .accessibilityHint("Select the completion date for your item")
             }

@@ -8,6 +8,13 @@ import SwiftUI
 import SwiftData
 
 
+
+
+
+import SwiftUI
+import SwiftData
+
+
 /// A view that displays a card representation of an Item with its details
 struct ItemCardView: View {
     // MARK: - Properties

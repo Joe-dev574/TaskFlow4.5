@@ -122,10 +122,11 @@ struct AddItem: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Title")
                 .foregroundStyle(category.color) // Preserved foreground style
-                .font(.headline)
+                .font(.title3)
             
             CustomTextEditor(remarks: $title, placeholder: "Enter title of your item...", minHeight: 35)
             .padding(8)
+            .foregroundStyle(.mediumGrey)
             .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
             .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         }
@@ -142,7 +143,7 @@ struct AddItem: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Brief Description")
                 .foregroundStyle(category.color) // Preserved foreground style
-                .font(.headline)
+                .font(.title3)
             CustomTextEditor(remarks: $remarks, placeholder: "Enter a brief description of your item", minHeight: 85)
                 .foregroundStyle(.mediumGrey) // Preserved white text
             .padding(8)
@@ -162,7 +163,7 @@ struct AddItem: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Category")
                 .foregroundStyle(category.color) // Preserved foreground style
-                .font(.headline)
+                .font(.title3)
             
             LabeledContent {
                 CategorySelector(
@@ -193,7 +194,7 @@ struct AddItem: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Dates")
                 .foregroundStyle(category.color) // Preserved foreground style
-                .font(.headline)
+                .font(.title3)
             
             VStack(spacing: 8) {
                 LabeledContent("Created") {
