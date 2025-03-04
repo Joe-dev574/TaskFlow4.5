@@ -28,6 +28,7 @@ struct ItemEditView: View {
     @State private var itemStatus: Item.Status        // Item status
     @State private var categoryAnimationTrigger: Bool = false  // Trigger for category change animation
     @State private var showErrorAlert: Bool = false   // Controls error alert visibility
+    @State private var showTaskSheet: Bool = false    // Task list for Item
     @State private var errorMessage: String = ""      // Error message text
     @State private var showTags = false               // Controls tags sheet visibility
     
@@ -105,6 +106,7 @@ struct ItemEditView: View {
     private var contentView: some View {
         NavigationStack {
             ScrollView {
+                //MARK:  **CONTENT MENU**
                 VStack(spacing: 24) {    // Main content stack with sections
                     titleSection
                     remarksSection
@@ -112,10 +114,11 @@ struct ItemEditView: View {
                     tagsSection
                     statusSection
                     datesSection
+                    taskSection
                 }
                 .padding()
             }
-            .navigationTitle(title)      // Dynamic navigation title
+            .navigationTitle(item.title)      // Dynamic navigation title
             .toolbar { toolbarItems }    // Custom toolbar with save button
             .foregroundStyle(calculateContrastingColor(background: itemCategory.color))
             .alert("Error", isPresented: $showErrorAlert) {
@@ -173,11 +176,11 @@ struct ItemEditView: View {
             
             CustomTextEditor(remarks: $remarks, placeholder: "Enter a brief description of your item", minHeight: 85)
                 .foregroundStyle(.mediumGrey) // Preserved white text
-            .padding(8)
-            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
-            .accessibilityLabel("Item Description")
-            .accessibilityHint("Enter brief description of your item")
+                .padding(8)
+                .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
+                .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+                .accessibilityLabel("Item Description")
+                .accessibilityHint("Enter brief description of your item")
         }
         .padding(SectionStyle.padding)
         .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
@@ -225,10 +228,10 @@ struct ItemEditView: View {
         VStack(alignment: .leading){
             HStack{
                 Text("Tags")
-                    .foregroundStyle(itemCategory.color)          // Section title in medium grey(off black : off light grey)
+                    .foregroundStyle(itemCategory.color)          // Section title in medium grey(off black : off white)
                     .font(.title3)
                 Spacer()
-          //      MARK:  Button to show tags management sheet
+                //      MARK:  Button to show tags management sheet
                 Button {
                     HapticsManager.notification(type: .success)
                     showTags.toggle()
@@ -241,9 +244,9 @@ struct ItemEditView: View {
                             RoundedRectangle(cornerRadius: 7)
                                 .fill(itemCategory.color.opacity( 0.7 ).gradient)
                         )
-                   //     .frame(width: 200, height: 40)
+              
                 }
-                 .sheet(isPresented: $showTags) {
+                .sheet(isPresented: $showTags) {
                     TagView(item: item)
                         .presentationDetents([.medium, .large])
                         .presentationDragIndicator(.visible)
@@ -274,20 +277,16 @@ struct ItemEditView: View {
                         .foregroundStyle(.gray)
                         .font(.subheadline)
                 }
-                // Button to show tags management sheet
-                
-                //                    .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
-                //                    .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
             }
         }
-            .padding(SectionStyle.padding)
-            .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
-                    .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
-            )
-        }
+        .padding(SectionStyle.padding)
+        .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
+        .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
+        )
+    }
     
     
     // MARK: Status Section
@@ -322,7 +321,6 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-    
     // MARK: Dates Section
     private var datesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -337,7 +335,7 @@ struct ItemEditView: View {
                             .foregroundStyle(.gray.opacity(0.2))
                         Text(dateAdded.formatted(.dateTime))
                             .font(.system(size: 16))
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.mediumGrey)
                     }
                     .frame(width: 195, height: 35)
                     .foregroundStyle(itemCategory.color)
@@ -359,9 +357,47 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-    
+
+    // MARK: Task Section
+    private var taskSection: some View {
+        VStack{
+            HStack{
+                Text("Tasks")
+                    .foregroundStyle(itemCategory.color)          // Section title in Category Color
+                    .font(.title3)
+                Spacer()
+                Button(action: {
+                    showTaskSheet = true
+                    HapticsManager.notification(type: .success)
+                }) {
+                    Image(systemName: "plus.circle")
+                        .font(.system(size: 20))
+                    Text("Tasks")
+                        .font(.system(size: 20))
+                }.padding(5)
+                .background(itemCategory.color.gradient)
+                    .cornerRadius(10)
+                    .foregroundStyle(.white)
+                    .sheet(isPresented: $showTaskSheet) {
+                        AddTaskView()
+                    }
+                    .presentationDetents([.medium])
+            }
+            Text(" Task List")
+            TaskListView()
+                .foregroundStyle(.mediumGrey)
+        }
+            .padding(SectionStyle.padding)
+            .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                    .stroke(itemCategory.color.opacity(0.3), lineWidth: 1))
+            }
+            
     // MARK: - Toolbar Items
-    private var toolbarItems: some ToolbarContent {
+        private var toolbarItems: some ToolbarContent {
+
         Group {
             ToolbarItem(placement: .principal) {
                 LogoView()
@@ -567,21 +603,6 @@ struct ItemEditView: View {
             }
         }
     }
-    
-    // MARK: - Preview (Assuming Tag struct exists)
-    //#Preview {
-    //
-    //    ItemEditView(editItem: Item(title: "Joe", remarks: "Is the man", dateAdded: .now, dateDue: .distantFuture, dateStarted: .now, dateCompleted: .distantFuture, status: .Active, category: .today, tintColor: Color.blue, tags: .none))
-    
-    //    TagItemView(
-    //        tag: Tag(name: "Example", color: "blue"),
-    //        onDelete: { print("Delete tapped") }
-    //    )
-    //
-    //    .background(Color(.systemBackground))
-    
-    
-    // MARK: - Color Extension
-    
+
 
         

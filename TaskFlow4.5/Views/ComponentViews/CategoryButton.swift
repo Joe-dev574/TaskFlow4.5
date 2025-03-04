@@ -21,7 +21,7 @@ struct CategoryButton: View {
                 .frame(maxWidth: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 7)
-                        .fill(category.color.opacity(isSelected ? 0.7 : 0.25))
+                        .fill(category.color.opacity(isSelected ? 0.8 : 0.25).gradient)
                 )
                 .foregroundStyle(isSelected ? .white : .secondary)
                 .overlay(
