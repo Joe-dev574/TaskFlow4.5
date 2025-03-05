@@ -33,7 +33,7 @@ struct ItemScreen: View {
                 addItemButton  // Floating action button pinned to bottom-right
                     .frame(
                         maxWidth: .infinity, maxHeight: .infinity,
-                        alignment: .bottomTrailing)
+                        alignment: .centerLastTextBaseline)
             }
             .blur(radius: showAddItemSheet ? 8 : 0)  // Blurs content when sheet is active
             .sheet(isPresented: $showAddItemSheet) {  // Presents sheet for adding new items

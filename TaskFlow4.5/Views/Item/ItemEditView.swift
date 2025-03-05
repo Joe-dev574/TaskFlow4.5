@@ -12,42 +12,42 @@ import SwiftUI
 struct ItemEditView: View {
     // MARK: - Environment Properties
     @Environment(\.modelContext) private var context  // SwiftData context for persistence
-    @Environment(\.dismiss) private var dismiss       // Environment value to dismiss the view
-    
+    @Environment(\.dismiss) private var dismiss  // Environment value to dismiss the view
+
     let item: Item  // The original item being edited (immutable reference)
-    
+
     // MARK: - State Properties
-    private let editItem: Item                        // Working copy of the item for editing
-    @State private var title: String                  // Item title
-    @State private var remarks: String                // Item description
-    @State private var dateAdded: Date                // Creation date
-    @State private var dateDue: Date                  // Due date
-    @State private var dateStarted: Date              // Start date
-    @State private var dateCompleted: Date            // Completion date
-    @State private var itemCategory: Category         // Item category
-    @State private var itemStatus: Item.Status        // Item status
+    private let editItem: Item  // Working copy of the item for editing
+    @State private var title: String  // Item title
+    @State private var remarks: String  // Item description
+    @State private var dateAdded: Date  // Creation date
+    @State private var dateDue: Date  // Due date
+    @State private var dateStarted: Date  // Start date
+    @State private var dateCompleted: Date  // Completion date
+    @State private var itemCategory: Category  // Item category
+    @State private var itemStatus: Item.Status  // Item status
     @State private var categoryAnimationTrigger: Bool = false  // Trigger for category change animation
-    @State private var showErrorAlert: Bool = false   // Controls error alert visibility
-    @State private var showTaskSheet: Bool = false    // Task list for Item
-    @State private var errorMessage: String = ""      // Error message text
-    @State private var showTags = false               // Controls tags sheet visibility
-    
+    @State private var showErrorAlert: Bool = false  // Controls error alert visibility
+    @State private var showTaskSheet: Bool = false  // Task list for Item
+    @State private var errorMessage: String = ""  // Error message text
+    @State private var showTags = false  // Controls tags sheet visibility
+    @State private var itemTasks: [ItemTask] = []
     // MARK: - Initial Values for Comparison
-    private let initialTitle: String                  // Initial title for change detection
-    private let initialRemarks: String                // Initial remarks for change detection
-    private let initialDateAdded: Date                // Initial added date for change detection
-    private let initialDateDue: Date                  // Initial due date for change detection
-    private let initialDateStarted: Date              // Initial start date for change detection
-    private let initialDateCompleted: Date            // Initial completion date for change detection
-    private let initialCategory: Category             // Initial category for change detection
-    private let initialStatus: Item.Status            // Initial status for change detection
-    private let initialTags: [Tag]?                   // Initial tags for change detection
-    
+    private let initialTitle: String  // Initial title for change detection
+    private let initialRemarks: String  // Initial remarks for change detection
+    private let initialDateAdded: Date  // Initial added date for change detection
+    private let initialDateDue: Date  // Initial due date for change detection
+    private let initialDateStarted: Date  // Initial start date for change detection
+    private let initialDateCompleted: Date  // Initial completion date for change detection
+    private let initialCategory: Category  // Initial category for change detection
+    private let initialStatus: Item.Status  // Initial status for change detection
+    private let initialTags: [Tag]?  // Initial tags for change detection
+    private let initialItemTasks: [ItemTask]?
     // MARK: - Initialization
     init(editItem: Item) {
-        self.item = editItem                         // Initialize the immutable item reference
-        self.editItem = editItem                     // Set the working copy
-        
+        self.item = editItem  // Initialize the immutable item reference
+        self.editItem = editItem  // Set the working copy
+
         // Initialize state properties with current item values
         _title = State(initialValue: editItem.title)
         _remarks = State(initialValue: editItem.remarks)
@@ -55,9 +55,11 @@ struct ItemEditView: View {
         _dateDue = State(initialValue: editItem.dateDue)
         _dateStarted = State(initialValue: editItem.dateStarted)
         _dateCompleted = State(initialValue: editItem.dateCompleted)
-        _itemCategory = State(initialValue: Category(rawValue: editItem.category) ?? .today)
-        _itemStatus = State(initialValue: Item.Status(rawValue: editItem.status)!)
-        
+        _itemCategory = State(
+            initialValue: Category(rawValue: editItem.category) ?? .today)
+        _itemStatus = State(
+            initialValue: Item.Status(rawValue: editItem.status)!)
+
         // Store initial values for change comparison
         initialTitle = editItem.title
         initialRemarks = editItem.remarks
@@ -67,47 +69,51 @@ struct ItemEditView: View {
         initialDateCompleted = editItem.dateCompleted
         initialCategory = Category(rawValue: editItem.category) ?? .today
         initialStatus = Item.Status(rawValue: editItem.status)!
-        initialTags = editItem.tags                  // Capture initial tags for comparison
+        initialTags = editItem.tags  // Capture initial tags for comparison
+        initialItemTasks = editItem.itemTasks
     }
-    
+
     // MARK: - Body
     var body: some View {
         ZStack {
-            backgroundView    // Background gradient layer
-            contentView       // Main content layer
+            backgroundView  // Background gradient layer
+            contentView  // Main content layer
         }
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)  // Support for large text sizes
     }
-    
+
     // MARK: - Background View
     private var backgroundView: some View {
         LinearGradient(
             gradient: Gradient(colors: [
-                .gray.opacity(0.02),    // Light gray top
-                .gray.opacity(0.1)      // Darker gray bottom
+                .gray.opacity(0.02),  // Light gray top
+                .gray.opacity(0.1),  // Darker gray bottom
             ]),
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
         .ignoresSafeArea()
         .scaleEffect(categoryAnimationTrigger ? 1.1 : 1.0)  // Scale animation for category change
-        .animation(.spring(response: 0.5, dampingFraction: 0.9), value: categoryAnimationTrigger)
+        .animation(
+            .spring(response: 0.5, dampingFraction: 0.9),
+            value: categoryAnimationTrigger
+        )
         .onChange(of: itemCategory) { _, _ in
             withAnimation {
-                categoryAnimationTrigger = true           // Trigger scale animation
+                categoryAnimationTrigger = true  // Trigger scale animation
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    categoryAnimationTrigger = false      // Reset after 0.5 seconds
+                    categoryAnimationTrigger = false  // Reset after 0.5 seconds
                 }
             }
         }
     }
-    
+
     // MARK: - Content View
     private var contentView: some View {
         NavigationStack {
             ScrollView {
                 //MARK:  **CONTENT MENU**
-                VStack(spacing: 24) {    // Main content stack with sections
+                VStack(spacing: 24) {  // Main content stack with sections
                     titleSection
                     remarksSection
                     categorySection
@@ -118,9 +124,11 @@ struct ItemEditView: View {
                 }
                 .padding()
             }
-            .navigationTitle(item.title)      // Dynamic navigation title
-            .toolbar { toolbarItems }    // Custom toolbar with save button
-            .foregroundStyle(calculateContrastingColor(background: itemCategory.color))
+            .navigationTitle(item.title)  // Dynamic navigation title
+            .toolbar { toolbarItems }  // Custom toolbar with save button
+            .foregroundStyle(
+                calculateContrastingColor(background: itemCategory.color)
+            )
             .alert("Error", isPresented: $showErrorAlert) {
                 Button("OK") { showErrorAlert = false }
             } message: {
@@ -129,34 +137,40 @@ struct ItemEditView: View {
             }
         }
     }
-    
+
     // MARK: - Section Styling Configuration
     private struct SectionStyle {
-        static let cornerRadius: CGFloat = 12        // Corner radius for sections
-        static let padding: CGFloat = 16             // Padding for sections
-        static let backgroundOpacity: Double = 0.01 // Base background opacity
+        static let cornerRadius: CGFloat = 10  // Corner radius for sections
+        static let padding: CGFloat = 16  // Padding for sections
+        static let backgroundOpacity: Double = 0.01  // Base background opacity
         static let reducedOpacity: Double = backgroundOpacity * 0.30  // Reduced opacity for layering
     }
-    
+
     // MARK: - Content Sections
     // MARK: Item Title Section
     private var titleSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Title")
-                .foregroundStyle(itemCategory.color)          // Section title in medium grey
+                .foregroundStyle(itemCategory.color)  // Section title in medium grey
                 .font(.title3)
-            
+
             LabeledContent {
-                CustomTextEditor(remarks: $title, placeholder: "Enter title of your item", minHeight: 45)
-                    .foregroundStyle(.mediumGrey)
-                    .accessibilityLabel("Item Title")
-                    .accessibilityHint("Enter the title of your item")
+                CustomTextEditor(
+                    remarks: $title, placeholder: "Enter title of your item",
+                    minHeight: 45
+                )
+                .foregroundStyle(.mediumGrey)
+                .accessibilityLabel("Item Title")
+                .accessibilityHint("Enter the title of your item")
             } label: {
                 EmptyView()
             }
             .padding(8)
-            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+            .background(
+                Color("LightGrey").opacity(SectionStyle.backgroundOpacity)
+            )
+            .clipShape(
+                RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         }
         .padding(SectionStyle.padding)
         .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
@@ -166,21 +180,29 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-    
+
     // MARK: Item Description Text Editor
     private var remarksSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Brief Description")
-                .foregroundStyle(itemCategory.color)          // Section title in medium grey
+                .foregroundStyle(itemCategory.color)  // Section title in medium grey
                 .font(.title3)
-            
-            CustomTextEditor(remarks: $remarks, placeholder: "Enter a brief description of your item", minHeight: 85)
-                .foregroundStyle(.mediumGrey) // Preserved white text
-                .padding(8)
-                .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
-                .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
-                .accessibilityLabel("Item Description")
-                .accessibilityHint("Enter brief description of your item")
+
+            CustomTextEditor(
+                remarks: $remarks,
+                placeholder: "Enter a brief description of your item",
+                minHeight: 85
+            )
+            .foregroundStyle(.mediumGrey)  // Preserved white text
+            .padding(8)
+            .background(
+                Color("LightGrey").opacity(SectionStyle.backgroundOpacity)
+            )
+            .clipShape(
+                RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+            )
+            .accessibilityLabel("Item Description")
+            .accessibilityHint("Enter brief description of your item")
         }
         .padding(SectionStyle.padding)
         .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
@@ -190,14 +212,14 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-    
+
     // MARK: Category Section
     private var categorySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Category")
-                .foregroundStyle(itemCategory.color)          // Section title in medium grey
+                .foregroundStyle(itemCategory.color)  // Section title in medium grey
                 .font(.title3)
-            
+
             LabeledContent {
                 CategorySelector(
                     selectedCategory: $itemCategory,
@@ -211,8 +233,11 @@ struct ItemEditView: View {
                 EmptyView()
             }
             .padding(8)
-            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+            .background(
+                Color("LightGrey").opacity(SectionStyle.backgroundOpacity)
+            )
+            .clipShape(
+                RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         }
         .padding(SectionStyle.padding)
         .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
@@ -222,13 +247,13 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-    
+
     // MARK: Tag Section
     private var tagsSection: some View {
-        VStack(alignment: .leading){
-            HStack{
+        VStack(alignment: .leading) {
+            HStack {
                 Text("Tags")
-                    .foregroundStyle(itemCategory.color)          // Section title in medium grey(off black : off white)
+                    .foregroundStyle(itemCategory.color)  // Section title in medium grey(off black : off white)
                     .font(.title3)
                 Spacer()
                 //      MARK:  Button to show tags management sheet
@@ -236,15 +261,20 @@ struct ItemEditView: View {
                     HapticsManager.notification(type: .success)
                     showTags.toggle()
                 } label: {
-                    Label("Manage Tags", systemImage: "tag")
-                        .padding(.horizontal, 7)
-                        .padding(2)
-                        .foregroundStyle(.white)
-                        .background(
-                            RoundedRectangle(cornerRadius: 7)
-                                .fill(itemCategory.color.opacity( 0.7 ).gradient)
-                        )
-              
+                    HStack {
+                        Text("Manage Tags")
+                            .font(.subheadline)
+                            .foregroundStyle(.white)
+                            .foregroundStyle(itemCategory.color.gradient)
+                        Image(systemName: "plus.circle.fill")
+                            .imageScale(.large)
+                            .foregroundStyle(.white)
+                    }
+                    .padding(4)
+                    .background(itemCategory.color.gradient)
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: SectionStyle.cornerRadius))
                 }
                 .sheet(isPresented: $showTags) {
                     TagView(item: item)
@@ -252,22 +282,25 @@ struct ItemEditView: View {
                         .presentationDragIndicator(.visible)
                 }.padding(.bottom, 8)
             }
-            VStack(alignment: .leading){
+            VStack(alignment: .leading) {
                 // Display existing tags in a horizontal scroll view
                 if let tags = editItem.tags, !tags.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(tags, id: \.self) { tag in
-                                TagItemView(    ///actual tag view
+                                TagItemView(
+                                    ///actual tag view
                                     tag: tag,
                                     onDelete: {
                                         // Remove tag from the editable item's tags array
-                                        if let index = editItem.tags?.firstIndex(of: tag) {
+                                        if let index = editItem.tags?
+                                            .firstIndex(of: tag)
+                                        {
                                             editItem.tags?.remove(at: index)
                                         }
                                     }
                                 ).padding(.horizontal, 4)
-                                
+
                             }.padding(.top, 7)
                         }
                     }
@@ -287,15 +320,14 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-    
-    
+
     // MARK: Status Section
     private var statusSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Status")
-                .foregroundStyle(itemCategory.color)          // Section title in medium grey
+                .foregroundStyle(itemCategory.color)  // Section title in medium grey
                 .font(.title3)
-            
+
             LabeledContent {
                 Picker("Status", selection: $itemStatus) {
                     ForEach(Item.Status.allCases, id: \.self) { status in
@@ -310,8 +342,11 @@ struct ItemEditView: View {
                 EmptyView()
             }
             .padding(8)
-            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+            .background(
+                Color("LightGrey").opacity(SectionStyle.backgroundOpacity)
+            )
+            .clipShape(
+                RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         }
         .padding(SectionStyle.padding)
         .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
@@ -325,9 +360,9 @@ struct ItemEditView: View {
     private var datesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Dates")
-                .foregroundStyle(itemCategory.color)          // Section title in medium grey
+                .foregroundStyle(itemCategory.color)  // Section title in medium grey
                 .font(.title3)
-            
+
             VStack(spacing: 8) {
                 LabeledContent("Created") {
                     ZStack {
@@ -341,13 +376,17 @@ struct ItemEditView: View {
                     .foregroundStyle(itemCategory.color)
                     .padding(.trailing, 3)
                     .accessibilityElement(children: .combine)
-                    .accessibilityLabel("Created \(dateAdded.formatted(.dateTime))")
+                    .accessibilityLabel(
+                        "Created \(dateAdded.formatted(.dateTime))")
                 }.foregroundStyle(.mediumGrey)
                 datePickersForCategory()
             }
             .padding(8)
-            .background(Color("LightGrey").opacity(SectionStyle.backgroundOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+            .background(
+                Color("LightGrey").opacity(SectionStyle.backgroundOpacity)
+            )
+            .clipShape(
+                RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         }
         .padding(SectionStyle.padding)
         .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
@@ -360,25 +399,52 @@ struct ItemEditView: View {
 
     // MARK: Task Section
     private var taskSection: some View {
-        NavigationStack{
-            VStack(alignment: .leading, spacing: 12) {
-                HStack{
-                    Text("Tasks")
-                        .foregroundStyle(itemCategory.color)          // Section title in Category Color
-                        .font(.title3)
-                    
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Tasks")
+                Spacer()
+                Button {
+                    HapticsManager.notification(type: .success)
+                   
+                    showTaskSheet.toggle()
+                } label: {
+                    HStack {
+                        Text("Add Task")
+                            .font(.subheadline)
+                            .foregroundStyle(.white)
+                            .foregroundStyle(itemCategory.color.gradient)
+                        Image(systemName: "plus.circle.fill")
+                            .imageScale(.large)
+                            .foregroundStyle(.white)
+                    }
+                    .padding(4)
+                    .background(itemCategory.color.gradient)
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: SectionStyle.cornerRadius))
                 }
+                .sheet(isPresented: $showTaskSheet) {
+                    AddTaskView(itemCategory: .today)
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
+                }
+                .padding(.bottom, 8)
             }
-            .padding(SectionStyle.padding)
-            .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
-                    .stroke(itemCategory.color.opacity(0.3), lineWidth: 1))
+            Text("List in this location will be displayed here.")
+                .foregroundStyle(.mediumGrey)
         }
+        .foregroundStyle(itemCategory.color)  // Section title in medium grey
+        .font(.title3)
+        .padding(SectionStyle.padding)
+ //       .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
+        .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
+                .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
+        )
     }
     // MARK: - Toolbar Items
-        private var toolbarItems: some ToolbarContent {
+    private var toolbarItems: some ToolbarContent {
 
         Group {
             ToolbarItem(placement: .principal) {
@@ -396,24 +462,23 @@ struct ItemEditView: View {
                 .tint(itemCategory.color)
                 .disabled(!hasFormChanged)  // Disable if no changes made
                 .accessibilityLabel("Save Changes")
-                .accessibilityHint("Tap to save your edited item. Disabled until changes are made.")
+                .accessibilityHint(
+                    "Tap to save your edited item. Disabled until changes are made."
+                )
             }
         }
     }
-    
+
     // MARK: - Private Computed Properties
     private var hasFormChanged: Bool {
         // Check if any field has changed from initial values, including tags
-        title != initialTitle ||
-        remarks != initialRemarks ||
-        dateAdded != initialDateAdded ||
-        dateDue != initialDateDue ||
-        dateStarted != initialDateStarted ||
-        dateCompleted != initialDateCompleted ||
-        itemCategory != initialCategory ||
-        editItem.tags != initialTags
+        title != initialTitle || remarks != initialRemarks
+            || dateAdded != initialDateAdded || dateDue != initialDateDue
+            || dateStarted != initialDateStarted
+            || dateCompleted != initialDateCompleted
+            || itemCategory != initialCategory || editItem.tags != initialTags
     }
-    
+
     // MARK: - Private Methods
     private func saveEditedItem() {
         // Update working copy with current values
@@ -425,13 +490,14 @@ struct ItemEditView: View {
         editItem.dateCompleted = dateCompleted
         editItem.category = itemCategory.rawValue
         // Note: Tags are updated via the tagsSection
-        
+
         do {
-            try context.save()              // Save changes to SwiftData
+            try context.save()  // Save changes to SwiftData
             HapticsManager.notification(type: .success)  // Success feedback
-            dismiss()                      // Close the view
+            dismiss()  // Close the view
         } catch {
-            errorMessage = "Failed to save changes: \(error.localizedDescription)"
+            errorMessage =
+                "Failed to save changes: \(error.localizedDescription)"
             showErrorAlert = true
             print("Save error: \(error.localizedDescription)")
         }
@@ -449,7 +515,7 @@ struct ItemEditView: View {
             .foregroundStyle(.mediumGrey)
             .accessibilityLabel("Due Date")
             .accessibilityHint("Select the due date for your item")
-            
+
             if itemCategory == .today || itemCategory == .work {
                 LabeledContent("Start") {
                     DatePicker("", selection: $dateStarted)
@@ -461,7 +527,7 @@ struct ItemEditView: View {
                 .accessibilityLabel("Start Date")
                 .accessibilityHint("Select the start date for your item")
             }
-            
+
             if itemCategory == .today {
                 LabeledContent("Finish") {
                     DatePicker("", selection: $dateCompleted)
@@ -478,42 +544,49 @@ struct ItemEditView: View {
     //MARK:  FUNCTIONS
     private func relativeLuminance(color: Color) -> Double {
         let uiColor = UIColor(color)
-        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
         uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
         let r = red <= 0.03928 ? red / 12.92 : pow((red + 0.055) / 1.055, 2.4)
-        let g = green <= 0.03928 ? green / 12.92 : pow((green + 0.055) / 1.055, 2.4)
-        let b = blue <= 0.03928 ? blue / 12.92 : pow((blue + 0.055) / 1.055, 2.4)
+        let g =
+            green <= 0.03928 ? green / 12.92 : pow((green + 0.055) / 1.055, 2.4)
+        let b =
+            blue <= 0.03928 ? blue / 12.92 : pow((blue + 0.055) / 1.055, 2.4)
         return 0.2126 * r + 0.7152 * g + 0.0722 * b
     }
-    
+
     private func contrastRatio(l1: Double, l2: Double) -> Double {
-        let lighter = max(l1, l2), darker = min(l1, l2)
+        let lighter = max(l1, l2)
+        let darker = min(l1, l2)
         return (lighter + 0.05) / (darker + 0.05)
     }
-    
+
     private func calculateContrastingColor(background: Color) -> Color {
         // Calculate contrasting color for readability
         let backgroundLuminance = relativeLuminance(color: background)
         let whiteLuminance = relativeLuminance(color: .white)
         let blackLuminance = relativeLuminance(color: .black)
-        let whiteContrast = contrastRatio(l1: backgroundLuminance, l2: whiteLuminance)
-        let blackContrast = contrastRatio(l1: backgroundLuminance, l2: blackLuminance)
-        return whiteContrast >= 7 && whiteContrast >= blackContrast ? .white : .black
+        let whiteContrast = contrastRatio(
+            l1: backgroundLuminance, l2: whiteLuminance)
+        let blackContrast = contrastRatio(
+            l1: backgroundLuminance, l2: blackLuminance)
+        return whiteContrast >= 7 && whiteContrast >= blackContrast
+            ? .white : .black
     }
-    
-    
-    
+
     //MARK:  TAGITEM VIEW
     /// Displays a tag with its name overlaid on a tag icon, with a delete button.
     struct TagItemView: View {
-        let tag: Tag            // The tag to display
+        let tag: Tag  // The tag to display
         let onDelete: () -> Void  // Closure to handle tag deletion
-        
-        @State  var showTags = false
-        
+
+        @State var showTags = false
+
         // MARK: - Body
         var body: some View {
-            VStack{
+            VStack {
                 HStack(spacing: 4) {
                     // Tag icon with text overlay
                     HStack(spacing: 0) {
@@ -521,7 +594,7 @@ struct ItemEditView: View {
                             .resizable()
                             .frame(width: 30, height: 30)  // Large enough for text overlay
                             .foregroundStyle(tag.hexColor)  // Fill with tag's color
-                        
+
                         Text(tag.name)
                             .foregroundStyle(.mediumGrey)  // Medium Grey text for contrast
                             .font(.system(size: 12, weight: .medium))
@@ -535,57 +608,58 @@ struct ItemEditView: View {
                         }
                         .buttonStyle(.plain)
                     }.padding(.horizontal, 2)
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel("Tag: \(tag.name)")
-                    .accessibilityAddTraits(.isButton)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("Tag: \(tag.name)")
+                        .accessibilityAddTraits(.isButton)
                 }
             }
         }
     }
-        
 }
-    
-    
-    // MARK: - Color Extension
-    extension Color {
-        /// Returns a darker version of the color by reducing RGB values
-        func darker() -> Color {
-            let uiColor = UIColor(self)
-            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-            uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-            return Color(red: max(red - 0.2, 0), green: max(green - 0.2, 0), blue: max(blue - 0.2, 0), opacity: alpha)
-        }
+
+// MARK: - Color Extension
+extension Color {
+    /// Returns a darker version of the color by reducing RGB values
+    func darker() -> Color {
+        let uiColor = UIColor(self)
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        return Color(
+            red: max(red - 0.2, 0), green: max(green - 0.2, 0),
+            blue: max(blue - 0.2, 0), opacity: alpha)
     }
-    
-    // MARK: - Tag Extension
-    extension Tag {
-        /// Converts the tag's color string to a SwiftUI Color
-        var swiftUIColor: Color {
-            switch tagColor.lowercased() {
-            case "red": return .red
-            case "blue": return .blue
-            case "green": return .green
-            case "yellow": return .yellow
-            case "purple": return .purple
-            case "orange": return .orange
-            case "gray": return .gray
-            case "black": return .black
-            case "white": return .white
-            default:
-                // Handle hex codes (e.g., "#FF0000") or fallback to gray
-                if tagColor.hasPrefix("#"), tagColor.count == 7 {
-                    let hex = String(tagColor.dropFirst())
-                    if let intValue = UInt32(hex, radix: 16) {
-                        let r = Double((intValue >> 16) & 0xFF) / 255.0
-                        let g = Double((intValue >> 8) & 0xFF) / 255.0
-                        let b = Double(intValue & 0xFF) / 255.0
-                        return Color(red: r, green: g, blue: b)
-                    }
+}
+
+// MARK: - Tag Extension
+extension Tag {
+    /// Converts the tag's color string to a SwiftUI Color
+    var swiftUIColor: Color {
+        switch tagColor.lowercased() {
+        case "red": return .red
+        case "blue": return .blue
+        case "green": return .green
+        case "yellow": return .yellow
+        case "purple": return .purple
+        case "orange": return .orange
+        case "gray": return .gray
+        case "black": return .black
+        case "white": return .white
+        default:
+            // Handle hex codes (e.g., "#FF0000") or fallback to gray
+            if tagColor.hasPrefix("#"), tagColor.count == 7 {
+                let hex = String(tagColor.dropFirst())
+                if let intValue = UInt32(hex, radix: 16) {
+                    let r = Double((intValue >> 16) & 0xFF) / 255.0
+                    let g = Double((intValue >> 8) & 0xFF) / 255.0
+                    let b = Double(intValue & 0xFF) / 255.0
+                    return Color(red: r, green: g, blue: b)
                 }
-                return .gray  // Fallback color if unrecognized
             }
+            return .gray  // Fallback color if unrecognized
         }
     }
+}
 
-
-        

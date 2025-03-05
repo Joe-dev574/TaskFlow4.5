@@ -24,7 +24,7 @@ struct CustomTabBar: View {
         GeometryReader { geometry in
             // Calculate available width for tab offset animation
             let size = geometry.size
-            let allOffset = size.width - (10 * CGFloat(Category.allCases.count - 1))
+            let allOffset = size.width - (8 * CGFloat(Category.allCases.count - 1))
             
             HStack(spacing: 5) {
                 // Container for regular tabs (excluding events)
@@ -32,7 +32,6 @@ struct CustomTabBar: View {
                     ForEach(Category.allCases.filter { $0 != .events }, id: \.rawValue) { tab in
                         ResizableTabButton(tab: tab)
                     }
-                    .fontDesign(.serif) // Apply serif font to all tab labels
                 }
                 
                 // Display scheduled tab only when it's active

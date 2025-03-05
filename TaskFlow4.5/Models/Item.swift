@@ -73,7 +73,8 @@ final class Item {
         status: Status = .Active,
         category: Category = .events,
         tintColor: TintColor,
-        tags: [Tag]? = nil
+        tags: [Tag]? = nil,
+        itemTasks: [ItemTask]? = nil
     ) {
         self.title = title
         self.remarks = remarks
@@ -85,6 +86,7 @@ final class Item {
         self.status = status.rawValue
         self.tintColor = tintColor.color
         self.tags = tags
+        self.itemTasks = itemTasks
     }
     var icon: Image {
         switch Status(rawValue: status)! {

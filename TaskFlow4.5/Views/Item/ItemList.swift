@@ -17,7 +17,7 @@ struct ItemList: View {
     private var filteredItems: [Item] {
         switch activeTab {
         case .events:
-            return items.filter { $0.category == "Scheduled" }.sorted { $0.dateDue < $1.dateDue }
+            return items.filter { $0.category == "Events" }.sorted { $0.dateDue < $1.dateDue }
         case .work:
             return items.filter { $0.category == "Work" }.sorted { $0.title < $1.title }
         case .today:
@@ -33,7 +33,7 @@ struct ItemList: View {
             ScrollView{
                 CustomTabBar(activeTab: $activeTab)
                 LazyVStack {
-                    Text(activeTab.rawValue + (activeTab == .events ? " Thou Shalt Not Forget! " : " Shit"))
+                    Text(activeTab.rawValue + (activeTab == .events ? " Thou Shalt Not Forget! " : " Focus"))
                         .font(.title3)
                         .fontDesign(.serif)
                         .foregroundColor(.gray)

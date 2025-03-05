@@ -23,6 +23,7 @@ struct CategoryButton: View {
                     RoundedRectangle(cornerRadius: 7)
                         .fill(category.color.opacity(isSelected ? 0.8 : 0.25).gradient)
                 )
+                .padding(4)
                 .foregroundStyle(isSelected ? .white : .secondary)
                 .overlay(
                     RoundedRectangle(cornerRadius: 7)
