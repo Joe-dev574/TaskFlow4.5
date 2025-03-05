@@ -14,7 +14,7 @@ struct ItemScreen: View {
     // Environment for managing object context in Core Data
     @Environment(\.modelContext) private var modelContext
     @State private var showAddItemSheet: Bool = false  // Toggles the add item sheet visibility
-    @State private var showSidebar: Bool = false  // Toggles the sidebar visibility
+    @State private var showTaskListSheet: Bool = false
     @State private var currentDate: Date = Date()  // Tracks current date for header display
 
     // MARK: - Body
@@ -38,19 +38,15 @@ struct ItemScreen: View {
             .blur(radius: showAddItemSheet ? 8 : 0)  // Blurs content when sheet is active
             .sheet(isPresented: $showAddItemSheet) {  // Presents sheet for adding new items
                 AddItem()
-                    .presentationDetents([.large])
+                    .presentationDetents([.medium])
             }
             .toolbar { toolbarItems }  // Configures fixed toolbar
             .toolbarBackground(.visible, for: .navigationBar)  // Ensures toolbar background stays visible
             .navigationBarTitleDisplayMode(.inline)  // Keeps toolbar compact and pinned
         }
-        .overlay {  // Sidebar overlay with transition
-            if showSidebar {
-//                SidebarView(isPresented: $showSidebar)
-//                    .transition(.move(edge: .leading))
-            }
+        
         }
-    }
+    
 
     // MARK: - Subviews
     /// Floating button to trigger the add item sheet
@@ -63,7 +59,7 @@ struct ItemScreen: View {
                 .font(.callout)
                 .foregroundStyle(.white)
                 .frame(width: 45, height: 45)
-                .background(.blue)
+                .background(.blue.gradient)
                 .clipShape(Circle())
                 .shadow(color: .black.opacity(0.25), radius: 5, x: 10, y: 10)
         }
@@ -77,20 +73,18 @@ struct ItemScreen: View {
         HStack(spacing: 8) {  // Reduced crowding with tighter spacing
             VStack(alignment: .leading, spacing: 2) {  // Compact vertical stack for date
                 Text(currentDate.format("MMMM YYYY"))  // Combines month and year in one line
-                    .font(.headline.bold())  // Smaller, bold font for clarity
+                    .font(.title3.bold())  // Smaller, bold font for clarity
                     .foregroundStyle(.blue)
 
                 Text(currentDate.format("EEEE, d"))  // Day and weekday on second line
-                    .font(.caption)  // Smaller font for less emphasis
+                    .font(.callout)  // Smaller font for less emphasis
                     .foregroundStyle(.gray)
             }
             Spacer()  // Pushes logo to the right
 
-            GearButtonView()  // Compact logo
-                .frame(width: 30, height: 25)  // Reduced size for toolbar fit
-                .foregroundStyle(.taskColor7)
+            
         }
-        .padding(.horizontal, 8)  // Consistent horizontal padding
+        .padding(.horizontal, 12)  // Consistent horizontal padding
     }
 
     // MARK: - Toolbar Configuration
@@ -100,13 +94,15 @@ struct ItemScreen: View {
             ToolbarItem(placement: .navigationBarLeading) {  // Sidebar toggle button
                 Button(action: {
                     withAnimation {
-                        showSidebar.toggle()  // Uncommented to enable sidebar
+                        showTaskListSheet.toggle()  // Uncommented to enable sidebar
                     }
                 }) {
-                    Image(systemName: "line.3.horizontal")
-                        .foregroundStyle(.blue)
+                    GearButtonView()  // Compact logo
+                        .frame(width: 30, height: 25)  // Reduced size for toolbar fit
+                        .foregroundStyle(.taskColor7)
+                        .padding(.bottom, 5)
                 }
-                .accessibilityLabel("Toggle Sidebar")
+                .accessibilityLabel("Toggle Settings")
             }
 
             ToolbarItem(placement: .principal) {  // Custom header in center
@@ -116,7 +112,7 @@ struct ItemScreen: View {
             ToolbarItem(placement: .navigationBarTrailing) {  // Profile navigation link
                 NavigationLink(destination: ProfileView()) {
                     Image(systemName: "person.circle")
-                        .font(.title3)
+                        .font(.title)
                         .foregroundStyle(.blue)
                 }
                 .accessibilityLabel("Profile")

@@ -14,42 +14,40 @@ class ItemTask {
     // MARK: - Properties
     
     // Task name with default empty string
-    var name: String = ""
-    
+    var taskName: String = ""
+    // Description name with default empty string
+    var taskDescription: String = ""
     // Completion status with default false
     var isCompleted: Bool = false
     
     // Optional date for the task (nil by default)
-    var taskDate: Date?
+    var taskDueDate: Date?
     
     
-    var dateAdded: Date = Date()
+    var dateCreated: Date = Date()
     
     // Optional time for the task (nil by default)
-    var taskTime: Date?
+    var taskDueTime: Date?
     
     // Optional reference to a related Item object
     var item: Item?
     
     // MARK: - Initialization
     
-    /// Creates a new ItemTask instance
-    /// - Parameters:
-    ///   - name: The task's name
-    ///   - isCompleted: Completion status (defaults to false)
-    ///   - taskDate: Scheduled date (defaults to nil)
-    ///   - taskTime: Scheduled time (defaults to nil)
     init(
-        name: String,
+        taskName: String = "",
+        taskDescription: String = "",
         isCompleted: Bool = false,
-        taskDate: Date? = nil,
-        dateAdded: Date = Date.now,
-        taskTime: Date? = nil
+        taskDueDate: Date? = nil,
+        dateCreated: Date = Date.now,
+        taskDueTime: Date? = nil,
+        item: Item? = nil
     ) {
-        self.name = name
+        self.taskName = taskName
         self.isCompleted = isCompleted
-        self.taskDate = taskDate
-        self.dateAdded = dateAdded
-        self.taskTime = taskTime
+        self.taskDueDate = taskDueDate
+        self.dateCreated = dateCreated
+        self.taskDueTime = taskDueTime
+        self.item = item
     }
 }

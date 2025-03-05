@@ -360,41 +360,23 @@ struct ItemEditView: View {
 
     // MARK: Task Section
     private var taskSection: some View {
-        VStack{
-            HStack{
-                Text("Tasks")
-                    .foregroundStyle(itemCategory.color)          // Section title in Category Color
-                    .font(.title3)
-                Spacer()
-                Button(action: {
-                    showTaskSheet = true
-                    HapticsManager.notification(type: .success)
-                }) {
-                    Image(systemName: "plus.circle")
-                        .font(.system(size: 20))
+        NavigationStack{
+            VStack(alignment: .leading, spacing: 12) {
+                HStack{
                     Text("Tasks")
-                        .font(.system(size: 20))
-                }.padding(5)
-                .background(itemCategory.color.gradient)
-                    .cornerRadius(10)
-                    .foregroundStyle(.white)
-                    .sheet(isPresented: $showTaskSheet) {
-                        AddTaskView()
-                    }
-                    .presentationDetents([.medium])
+                        .foregroundStyle(itemCategory.color)          // Section title in Category Color
+                        .font(.title3)
+                    
+                }
             }
-            Text(" Task List")
-            TaskListView()
-                .foregroundStyle(.mediumGrey)
-        }
             .padding(SectionStyle.padding)
             .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
             .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
                     .stroke(itemCategory.color.opacity(0.3), lineWidth: 1))
-            }
-            
+        }
+    }
     // MARK: - Toolbar Items
         private var toolbarItems: some ToolbarContent {
 
@@ -560,6 +542,7 @@ struct ItemEditView: View {
             }
         }
     }
+        
 }
     
     

@@ -89,11 +89,13 @@ final class Item {
     var icon: Image {
         switch Status(rawValue: status)! {
         case .Upcoming:
-            Image(systemName: "checkmark.diamond.fill")
+            Image(systemName: "calendar.badge.clock")
         case .Active:
-            Image(systemName: "item.fill")
+            Image(systemName: "app.badge.clock")
         case .Hold:
-            Image(systemName: "books.vertical.fill")
+            Image(systemName: "calendar.badge.exclamationmark")
+        case .Plan:
+            Image(systemName: "calendar")
         }
     }
     /// Extracting Color Value from tintColor String
@@ -126,10 +128,11 @@ final class Item {
     
     
     enum Status: Int, Codable, Identifiable, CaseIterable {
-        case Upcoming, Active, Hold
+        case Plan, Upcoming, Active, Hold
         var id: Self { self }
         var descr: LocalizedStringResource {
             switch self {
+            case .Plan: "Plan"
             case .Upcoming: "Upcoming"
             case .Active: "Active"
             case .Hold: "Hold"

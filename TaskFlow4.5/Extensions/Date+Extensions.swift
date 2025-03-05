@@ -17,9 +17,19 @@ extension Date {
         return formatter.string(from: self)
     }
     
+    var dateComponents: DateComponents {
+        Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: self)
+    }
+    
     /// Checking Whether the Date is Today
     var isToday: Bool {
+        let calendar = Calendar.current
         return Calendar.current.isDateInToday(self)
+    }
+    //
+    var isTomorrow: Bool {
+        let calendar = Calendar.current
+        return calendar.isDateInTomorrow(self)
     }
     
     /// Checking if the date is Same Hour
