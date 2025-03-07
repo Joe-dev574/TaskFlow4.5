@@ -13,9 +13,9 @@ struct ItemEditView: View {
     // MARK: - Environment Properties
     @Environment(\.modelContext) private var context  // SwiftData context for persistence
     @Environment(\.dismiss) private var dismiss  // Environment value to dismiss the view
-
+    
     let item: Item  // The original item being edited (immutable reference)
-
+    
     // MARK: - State Properties
     private let editItem: Item  // Working copy of the item for editing
     @State private var title: String  // Item title
@@ -47,7 +47,7 @@ struct ItemEditView: View {
     init(editItem: Item) {
         self.item = editItem  // Initialize the immutable item reference
         self.editItem = editItem  // Set the working copy
-
+        
         // Initialize state properties with current item values
         _title = State(initialValue: editItem.title)
         _remarks = State(initialValue: editItem.remarks)
@@ -59,7 +59,7 @@ struct ItemEditView: View {
             initialValue: Category(rawValue: editItem.category) ?? .today)
         _itemStatus = State(
             initialValue: Item.Status(rawValue: editItem.status)!)
-
+        _itemTasks = State(initialValue: editItem.itemTasks!)
         // Store initial values for change comparison
         initialTitle = editItem.title
         initialRemarks = editItem.remarks
@@ -72,7 +72,7 @@ struct ItemEditView: View {
         initialTags = editItem.tags  // Capture initial tags for comparison
         initialItemTasks = editItem.itemTasks
     }
-
+    
     // MARK: - Body
     var body: some View {
         ZStack {
@@ -81,7 +81,7 @@ struct ItemEditView: View {
         }
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)  // Support for large text sizes
     }
-
+    
     // MARK: - Background View
     private var backgroundView: some View {
         LinearGradient(
@@ -107,7 +107,7 @@ struct ItemEditView: View {
             }
         }
     }
-
+    
     // MARK: - Content View
     private var contentView: some View {
         NavigationStack {
@@ -137,7 +137,7 @@ struct ItemEditView: View {
             }
         }
     }
-
+    
     // MARK: - Section Styling Configuration
     private struct SectionStyle {
         static let cornerRadius: CGFloat = 10  // Corner radius for sections
@@ -145,15 +145,14 @@ struct ItemEditView: View {
         static let backgroundOpacity: Double = 0.01  // Base background opacity
         static let reducedOpacity: Double = backgroundOpacity * 0.30  // Reduced opacity for layering
     }
-
-    // MARK: - Content Sections
+    
     // MARK: Item Title Section
     private var titleSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Title")
                 .foregroundStyle(itemCategory.color)  // Section title in medium grey
                 .font(.title3)
-
+            
             LabeledContent {
                 CustomTextEditor(
                     remarks: $title, placeholder: "Enter title of your item",
@@ -180,14 +179,14 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-
+    
     // MARK: Item Description Text Editor
     private var remarksSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Brief Description")
                 .foregroundStyle(itemCategory.color)  // Section title in medium grey
                 .font(.title3)
-
+            
             CustomTextEditor(
                 remarks: $remarks,
                 placeholder: "Enter a brief description of your item",
@@ -212,14 +211,14 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-
+    
     // MARK: Category Section
     private var categorySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Category")
                 .foregroundStyle(itemCategory.color)  // Section title in medium grey
                 .font(.title3)
-
+            
             LabeledContent {
                 CategorySelector(
                     selectedCategory: $itemCategory,
@@ -247,7 +246,7 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-
+    
     // MARK: Tag Section
     private var tagsSection: some View {
         VStack(alignment: .leading) {
@@ -300,7 +299,7 @@ struct ItemEditView: View {
                                         }
                                     }
                                 ).padding(.horizontal, 4)
-
+                                
                             }.padding(.top, 7)
                         }
                     }
@@ -320,14 +319,14 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-
+    
     // MARK: Status Section
     private var statusSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Status")
                 .foregroundStyle(itemCategory.color)  // Section title in medium grey
                 .font(.title3)
-
+            
             LabeledContent {
                 Picker("Status", selection: $itemStatus) {
                     ForEach(Item.Status.allCases, id: \.self) { status in
@@ -362,7 +361,7 @@ struct ItemEditView: View {
             Text("Dates")
                 .foregroundStyle(itemCategory.color)  // Section title in medium grey
                 .font(.title3)
-
+            
             VStack(spacing: 8) {
                 LabeledContent("Created") {
                     ZStack {
@@ -396,47 +395,34 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 1)
         )
     }
-
+    
     // MARK: Task Section
     private var taskSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Tasks")
+                    .foregroundStyle(itemCategory.color)  // Section title in medium grey
+                    .font(.title3)
                 Spacer()
                 Button {
                     HapticsManager.notification(type: .success)
-                   
-                    showTaskSheet.toggle()
+                    itemTasks.append(ItemTask(taskName: ""))
                 } label: {
-                    HStack {
-                        Text("Add Task")
-                            .font(.subheadline)
+                    HStack(spacing: 7) {
+                        Text("New Task")
                             .foregroundStyle(.white)
-                            .foregroundStyle(itemCategory.color.gradient)
                         Image(systemName: "plus.circle.fill")
-                            .imageScale(.large)
                             .foregroundStyle(.white)
                     }
-                    .padding(4)
-                    .background(itemCategory.color.gradient)
-                    .clipShape(
-                        RoundedRectangle(
-                            cornerRadius: SectionStyle.cornerRadius))
+                    .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
+                    .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
+                    .foregroundStyle(.mediumGrey)
                 }
-                .sheet(isPresented: $showTaskSheet) {
-                    AddTaskView(itemCategory: .today)
-                        .presentationDetents([.medium, .large])
-                        .presentationDragIndicator(.visible)
-                }
-                .padding(.bottom, 8)
+                TaskListView( item: item)
             }
-            Text("List in this location will be displayed here.")
-                .foregroundStyle(.mediumGrey)
         }
-        .foregroundStyle(itemCategory.color)  // Section title in medium grey
-        .font(.title3)
         .padding(SectionStyle.padding)
- //       .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
+        //       .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
         .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
         .overlay(
             RoundedRectangle(cornerRadius: SectionStyle.cornerRadius)
@@ -445,7 +431,7 @@ struct ItemEditView: View {
     }
     // MARK: - Toolbar Items
     private var toolbarItems: some ToolbarContent {
-
+        
         Group {
             ToolbarItem(placement: .principal) {
                 LogoView()
@@ -468,17 +454,17 @@ struct ItemEditView: View {
             }
         }
     }
-
+    
     // MARK: - Private Computed Properties
     private var hasFormChanged: Bool {
         // Check if any field has changed from initial values, including tags
         title != initialTitle || remarks != initialRemarks
-            || dateAdded != initialDateAdded || dateDue != initialDateDue
-            || dateStarted != initialDateStarted
-            || dateCompleted != initialDateCompleted
-            || itemCategory != initialCategory || editItem.tags != initialTags
+        || dateAdded != initialDateAdded || dateDue != initialDateDue
+        || dateStarted != initialDateStarted
+        || dateCompleted != initialDateCompleted
+        || itemCategory != initialCategory || editItem.tags != initialTags
     }
-
+    
     // MARK: - Private Methods
     private func saveEditedItem() {
         // Update working copy with current values
@@ -490,14 +476,14 @@ struct ItemEditView: View {
         editItem.dateCompleted = dateCompleted
         editItem.category = itemCategory.rawValue
         // Note: Tags are updated via the tagsSection
-
+        
         do {
             try context.save()  // Save changes to SwiftData
             HapticsManager.notification(type: .success)  // Success feedback
             dismiss()  // Close the view
         } catch {
             errorMessage =
-                "Failed to save changes: \(error.localizedDescription)"
+            "Failed to save changes: \(error.localizedDescription)"
             showErrorAlert = true
             print("Save error: \(error.localizedDescription)")
         }
@@ -515,19 +501,19 @@ struct ItemEditView: View {
             .foregroundStyle(.mediumGrey)
             .accessibilityLabel("Due Date")
             .accessibilityHint("Select the due date for your item")
-
+            
             if itemCategory == .today || itemCategory == .work {
                 LabeledContent("Start") {
                     DatePicker("", selection: $dateStarted)
                         .labelsHidden()
-
+                    
                         .font(.caption)
                 }
                 .foregroundStyle(.mediumGrey)
                 .accessibilityLabel("Start Date")
                 .accessibilityHint("Select the start date for your item")
             }
-
+            
             if itemCategory == .today {
                 LabeledContent("Finish") {
                     DatePicker("", selection: $dateCompleted)
@@ -551,18 +537,18 @@ struct ItemEditView: View {
         uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
         let r = red <= 0.03928 ? red / 12.92 : pow((red + 0.055) / 1.055, 2.4)
         let g =
-            green <= 0.03928 ? green / 12.92 : pow((green + 0.055) / 1.055, 2.4)
+        green <= 0.03928 ? green / 12.92 : pow((green + 0.055) / 1.055, 2.4)
         let b =
-            blue <= 0.03928 ? blue / 12.92 : pow((blue + 0.055) / 1.055, 2.4)
+        blue <= 0.03928 ? blue / 12.92 : pow((blue + 0.055) / 1.055, 2.4)
         return 0.2126 * r + 0.7152 * g + 0.0722 * b
     }
-
+    
     private func contrastRatio(l1: Double, l2: Double) -> Double {
         let lighter = max(l1, l2)
         let darker = min(l1, l2)
         return (lighter + 0.05) / (darker + 0.05)
     }
-
+    
     private func calculateContrastingColor(background: Color) -> Color {
         // Calculate contrasting color for readability
         let backgroundLuminance = relativeLuminance(color: background)
@@ -573,93 +559,93 @@ struct ItemEditView: View {
         let blackContrast = contrastRatio(
             l1: backgroundLuminance, l2: blackLuminance)
         return whiteContrast >= 7 && whiteContrast >= blackContrast
-            ? .white : .black
+        ? .white : .black
     }
-
+}
     //MARK:  TAGITEM VIEW
     /// Displays a tag with its name overlaid on a tag icon, with a delete button.
-    struct TagItemView: View {
-        let tag: Tag  // The tag to display
-        let onDelete: () -> Void  // Closure to handle tag deletion
+struct TagItemView: View {
+       let tag: Tag  // The tag to display
+       let onDelete: () -> Void  // Closure to handle tag deletion
 
-        @State var showTags = false
+       @State var showTags = false
 
-        // MARK: - Body
-        var body: some View {
-            VStack {
-                HStack(spacing: 4) {
-                    // Tag icon with text overlay
-                    HStack(spacing: 0) {
-                        Image(systemName: "tag.fill")  // Using filled tag icon
-                            .resizable()
-                            .frame(width: 30, height: 30)  // Large enough for text overlay
-                            .foregroundStyle(tag.hexColor)  // Fill with tag's color
+       // MARK: - Body
+       var body: some View {
+           VStack {
+               HStack(spacing: 4) {
+                   // Tag icon with text overlay
+                   HStack(spacing: 0) {
+                       Image(systemName: "tag.fill")  // Using filled tag icon
+                           .resizable()
+                           .frame(width: 30, height: 30)  // Large enough for text overlay
+                           .foregroundStyle(tag.hexColor)  // Fill with tag's color
 
-                        Text(tag.name)
-                            .foregroundStyle(.mediumGrey)  // Medium Grey text for contrast
-                            .font(.system(size: 12, weight: .medium))
-                        // Padding to fit within tag shape
-                        // Delete button
-                        Button(action: onDelete) {
-                            Image(systemName: "minus.circle")
-                                .foregroundStyle(.lightGrey)  // Consistent delete icon color
-                                .frame(width: 15, height: 15)
-                                .padding(.horizontal, 1)
+                       Text(tag.name)
+                           .foregroundStyle(.mediumGrey)  // Medium Grey text for contrast
+                           .font(.system(size: 12, weight: .medium))
+                       // Padding to fit within tag shape
+                       // Delete button
+                       Button(action: onDelete) {
+                           Image(systemName: "minus.circle")
+                               .foregroundStyle(.lightGrey)  // Consistent delete icon color
+                               .frame(width: 15, height: 15)
+                               .padding(.horizontal, 1)
+                       }
+                       .buttonStyle(.plain)
+                   }.padding(.horizontal, 2)
+                       .accessibilityElement(children: .combine)
+                       .accessibilityLabel("Tag: \(tag.name)")
+                       .accessibilityAddTraits(.isButton)
+               }
+           }
+       }
+   }
+    
+        // MARK: - Color Extension
+        extension Color {
+            /// Returns a darker version of the color by reducing RGB values
+            func darker() -> Color {
+                let uiColor = UIColor(self)
+                var red: CGFloat = 0
+                var green: CGFloat = 0
+                var blue: CGFloat = 0
+                var alpha: CGFloat = 0
+                uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+                return Color(
+                    red: max(red - 0.2, 0), green: max(green - 0.2, 0),
+                    blue: max(blue - 0.2, 0), opacity: alpha)
+            }
+        }
+    
+        // MARK: - Tag Extension
+        extension Tag {
+            /// Converts the tag's color string to a SwiftUI Color
+            var swiftUIColor: Color {
+                switch tagColor.lowercased() {
+                case "red": return .red
+                case "blue": return .blue
+                case "green": return .green
+                case "yellow": return .yellow
+                case "purple": return .purple
+                case "orange": return .orange
+                case "gray": return .gray
+                case "black": return .black
+                case "white": return .white
+                default:
+                    // Handle hex codes (e.g., "#FF0000") or fallback to gray
+                    if tagColor.hasPrefix("#"), tagColor.count == 7 {
+                        let hex = String(tagColor.dropFirst())
+                        if let intValue = UInt32(hex, radix: 16) {
+                            let r = Double((intValue >> 16) & 0xFF) / 255.0
+                            let g = Double((intValue >> 8) & 0xFF) / 255.0
+                            let b = Double(intValue & 0xFF) / 255.0
+                            return Color(red: r, green: g, blue: b)
                         }
-                        .buttonStyle(.plain)
-                    }.padding(.horizontal, 2)
-                        .accessibilityElement(children: .combine)
-                        .accessibilityLabel("Tag: \(tag.name)")
-                        .accessibilityAddTraits(.isButton)
+                    }
+                    return .gray  // Fallback color if unrecognized
                 }
             }
         }
-    }
-}
-
-// MARK: - Color Extension
-extension Color {
-    /// Returns a darker version of the color by reducing RGB values
-    func darker() -> Color {
-        let uiColor = UIColor(self)
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
-        var alpha: CGFloat = 0
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        return Color(
-            red: max(red - 0.2, 0), green: max(green - 0.2, 0),
-            blue: max(blue - 0.2, 0), opacity: alpha)
-    }
-}
-
-// MARK: - Tag Extension
-extension Tag {
-    /// Converts the tag's color string to a SwiftUI Color
-    var swiftUIColor: Color {
-        switch tagColor.lowercased() {
-        case "red": return .red
-        case "blue": return .blue
-        case "green": return .green
-        case "yellow": return .yellow
-        case "purple": return .purple
-        case "orange": return .orange
-        case "gray": return .gray
-        case "black": return .black
-        case "white": return .white
-        default:
-            // Handle hex codes (e.g., "#FF0000") or fallback to gray
-            if tagColor.hasPrefix("#"), tagColor.count == 7 {
-                let hex = String(tagColor.dropFirst())
-                if let intValue = UInt32(hex, radix: 16) {
-                    let r = Double((intValue >> 16) & 0xFF) / 255.0
-                    let g = Double((intValue >> 8) & 0xFF) / 255.0
-                    let b = Double(intValue & 0xFF) / 255.0
-                    return Color(red: r, green: g, blue: b)
-                }
-            }
-            return .gray  // Fallback color if unrecognized
-        }
-    }
-}
+    
 

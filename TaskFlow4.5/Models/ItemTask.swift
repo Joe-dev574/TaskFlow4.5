@@ -12,14 +12,14 @@ import SwiftData
 @Model
 class ItemTask {
     // MARK: - Properties
-    
+    private(set) var taskID: String = UUID().uuidString
     // Task name with default empty string
     var taskName: String = ""
     // Description name with default empty string
     var taskDescription: String = ""
     // Completion status with default false
     var isCompleted: Bool = false
-    
+    var priority: Priority = Priority.normal
     // Optional date for the task (nil by default)
     var taskDueDate: Date?
     
@@ -41,7 +41,8 @@ class ItemTask {
         taskDueDate: Date? = nil,
         dateCreated: Date = Date.now,
         taskDueTime: Date? = nil,
-        item: Item? = nil
+        item: Item? = nil,
+        itemTask: ItemTask? = nil
     ) {
         self.taskName = taskName
         self.isCompleted = isCompleted
@@ -49,5 +50,24 @@ class ItemTask {
         self.dateCreated = dateCreated
         self.taskDueTime = taskDueTime
         self.item = item
+     
+    }
+}
+/// Priority Status
+enum Priority: String, Codable, CaseIterable {
+    case normal = "Normal"
+    case medium = "Medium"
+    case hot = "Hot"
+    
+    /// Priority Color
+    var color: Color {
+        switch self {
+        case .normal:
+            return .green
+        case .medium:
+            return .yellow
+        case .hot:
+            return .red
+        }
     }
 }
